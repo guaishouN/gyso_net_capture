@@ -4,15 +4,11 @@ from mitmproxy import proxy, options, exceptions
 from mitmproxy.tools.dump import DumpMaster
 import aiohttp
 from flask import Flask, redirect, render_template, request, url_for, Markup
-from flask_socketio import SocketIO
-from flask_cors import CORS, cross_origin
 import signal
 
 app = Flask(__name__)
 queue = asyncio.Queue()
 exit_event = asyncio.Event()
-socketio = SocketIO(app, cors_allowed_origins="*")
-cors = CORS(app)
 
 
 class Addon:
@@ -37,29 +33,8 @@ class Addon:
 
 
 @app.route("/", methods=("GET", "POST"))
-@cross_origin()  # 允许跨源访问该路由
 def index():
     return render_template("data.html")
-
-
-@socketio.on('connect')
-def handle_connect():
-    print('Client connected')
-
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    print('Client disconnected')
-
-
-@socketio.on('message')
-def handle_message(data):
-    # 处理收到的消息
-    print('Received message:', data)
-    # 在这里根据需要，将消息推送给其他客户端
-
-    # 发送响应消息给发送方客户端
-    socketio.emit('response', 'Message received')
 
 
 @app.route('/data')
@@ -86,7 +61,7 @@ async def run_mitmdump():
 
 
 def run_flask():
-    socketio.run(app, allow_unsafe_werkzeug=True)
+    app.run()
 
 
 def run_mitm_app():
@@ -109,7 +84,6 @@ if __name__ == '__main__':
 
     # 在线程池中运行 Flask
     flask_future = executor.submit(run_flask)
-
 
     # 注册退出事件处理函数
     signal.signal(signal.SIGINT, lambda signum, frame: asyncio.ensure_future(shutdown()))
