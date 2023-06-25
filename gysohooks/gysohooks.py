@@ -95,12 +95,11 @@ def flask_queue_emit():
         print("flask_queue_emit  --- queue data", str(package))
         socketio.emit('response', str(package))
         queue_m.task_done()
-        print("flask_queue_emit  #########")
 
 
 if __name__ == '__main__':
     # 创建线程池
-    executor = ThreadPoolExecutor(max_workers=2)
+    executor = ThreadPoolExecutor(max_workers=3)
 
     # 在线程池中运行 mitmproxy
     mitmdump_future = executor.submit(asyncio.run, run_mitmdump())
