@@ -3,38 +3,16 @@ import queue
 from concurrent.futures import ThreadPoolExecutor
 from mitmproxy import proxy, options, exceptions
 from mitmproxy.tools.dump import DumpMaster
-import aiohttp
 from flask import Flask, redirect, render_template, request, url_for, Markup
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
-import signal
+from m_addon import GysoAddon
 
 app = Flask(__name__)
 queue_m = queue.Queue()
 exit_event = asyncio.Event()
 socketio = SocketIO(app, cors_allowed_origins="*")
 cors = CORS(app)
-
-
-class Addon:
-    def __init__(self, app_s, queue_s):
-        self.app = app_s
-        self.queue_m = queue_s
-
-    async def request(self, flow):
-        async with aiohttp.ClientSession() as session:
-            async with session.request(
-                    method=flow.request.method,
-                    url=flow.request.url,
-                    headers=flow.request.headers,
-                    # data=await flow.request.content.read()
-            ) as response:
-                status = response.status
-                headers = response.headers
-                content = await response.read()
-
-                # 将结果发送到 Flask 应用
-                self.queue_m.put((flow.request, status, headers, content))
 
 
 @app.route("/", methods=("GET", "POST"))
@@ -71,7 +49,7 @@ async def run_mitmdump():
     mitm_master = DumpMaster(mitm_options)
 
     # 创建 Addon 实例并传递队列
-    addon = Addon(app, queue_m)
+    addon = GysoAddon(app, queue_m)
     mitm_master.addons.add(addon)
 
     # 启动 mitmproxy
@@ -101,14 +79,14 @@ if __name__ == '__main__':
     # 创建线程池
     executor = ThreadPoolExecutor(max_workers=3)
 
-    # 在线程池中运行 mitmproxy
-    mitmdump_future = executor.submit(asyncio.run, run_mitmdump())
-
     # 在线程池中运行 Flask
     flask_future = executor.submit(run_flask)
 
     # Queue process
-    queue_future = executor.submit(flask_queue_emit())
+    queue_future = executor.submit(flask_queue_emit)
+
+    # 在线程池中运行 mitmproxy
+    mitmdump_future = executor.submit(asyncio.run, run_mitmdump())
 
     # 创建事件循环
     loop = asyncio.get_event_loop()
