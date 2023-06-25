@@ -13,7 +13,7 @@
     <option name="TEMPLATE_CONFIGURATION" value="Jinja2" />
     <option name="TEMPLATE_FOLDERS">
       <list>
-        <option value="$MODULE_DIR$/mitmproxy/addons/onboardingapp/templates" />
+        <option value="$MODULE_DIR$/gysohooks/templates" />
       </list>
     </option>
   </component>

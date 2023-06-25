@@ -1,0 +1,32 @@
+Metadata-Version: 2.1
+Name: mitmproxy
+Version: 10.0.0.dev0
+Summary: An interactive, SSL/TLS-capable intercepting proxy for HTTP/1, HTTP/2, and WebSockets.
+Author-email: Aldo Cortesi <aldo@corte.si>
+Maintainer-email: Maximilian Hils <mitmproxy@maximilianhils.com>
+Project-URL: Homepage, https://mitmproxy.org
+Project-URL: Source, https://github.com/mitmproxy/mitmproxy/
+Project-URL: Documentation, https://docs.mitmproxy.org/stable/
+Project-URL: Issues, https://github.com/mitmproxy/mitmproxy/issues
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console :: Curses
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Topic :: Security
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: Proxy Servers
+Classifier: Topic :: System :: Networking :: Monitoring
+Classifier: Topic :: Software Development :: Testing
+Classifier: Typing :: Typed
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+
+# gyso_net_capture
+HTTP or HTTPS packages capture tool based on mitmproxy

@@ -28,6 +28,10 @@ def flask_queue_emit():
 
 
 if __name__ == '__main__':
+    executor = ThreadPoolExecutor(max_workers=2)
+    # 在线程池中运行 mitmproxy
+    mitmdump_future = executor.submit(flask_queue_emit)
+
     loop_m = asyncio.get_event_loop()
     print(f'begin sync task')
     asyncio.ensure_future(task("C", 8))
@@ -35,11 +39,6 @@ if __name__ == '__main__':
 
     print(f'begin async task')
     tasks = asyncio.gather(task('A', 10), task('B', 5))
-
-    executor = ThreadPoolExecutor(max_workers=2)
-
-    # 在线程池中运行 mitmproxy
-    mitmdump_future = executor.submit(flask_queue_emit)
 
     print(f'done add tasks')
     loop_m.run_until_complete(tasks)

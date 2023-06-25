@@ -1,4 +1,5 @@
 import asyncio
+import queue
 from concurrent.futures import ThreadPoolExecutor
 from mitmproxy import proxy, options, exceptions
 from mitmproxy.tools.dump import DumpMaster
@@ -9,7 +10,7 @@ from flask_cors import CORS, cross_origin
 import signal
 
 app = Flask(__name__)
-queue = asyncio.Queue()
+queue_m = queue.Queue()
 exit_event = asyncio.Event()
 socketio = SocketIO(app, cors_allowed_origins="*")
 cors = CORS(app)
@@ -18,7 +19,7 @@ cors = CORS(app)
 class Addon:
     def __init__(self, app_s, queue_s):
         self.app = app_s
-        self.queue = queue_s
+        self.queue_m = queue_s
 
     async def request(self, flow):
         async with aiohttp.ClientSession() as session:
@@ -33,7 +34,7 @@ class Addon:
                 content = await response.read()
 
                 # 将结果发送到 Flask 应用
-                await self.queue.put((flow.request, status, headers, content))
+                self.queue_m.put((flow.request, status, headers, content))
 
 
 @app.route("/", methods=("GET", "POST"))
@@ -62,14 +63,6 @@ def handle_message(data):
     socketio.emit('response', 'Message received')
 
 
-@app.route('/data')
-def data():
-    results = []
-    while not queue.empty():
-        results.append(Markup.escape(queue.get_nowait()))
-    return str(results)
-
-
 async def run_mitmdump():
     # 创建 mitmproxy 的选项对象
     mitm_options = options.Options()
@@ -78,7 +71,7 @@ async def run_mitmdump():
     mitm_master = DumpMaster(mitm_options)
 
     # 创建 Addon 实例并传递队列
-    addon = Addon(app, queue)
+    addon = Addon(app, queue_m)
     mitm_master.addons.add(addon)
 
     # 启动 mitmproxy
@@ -95,9 +88,14 @@ def run_mitm_app():
     loop_m.run_until_complete(run_mitmdump())
 
 
-async def shutdown():
-    await asyncio.sleep(0.1)
-    exit_event.set()
+def flask_queue_emit():
+    print("flask_queue_emit begin running")
+    while True:
+        package = queue_m.get()
+        print("flask_queue_emit  --- queue data", str(package))
+        socketio.emit('response', str(package))
+        queue_m.task_done()
+        print("flask_queue_emit  #########")
 
 
 if __name__ == '__main__':
@@ -110,16 +108,14 @@ if __name__ == '__main__':
     # 在线程池中运行 Flask
     flask_future = executor.submit(run_flask)
 
-
-    # 注册退出事件处理函数
-    signal.signal(signal.SIGINT, lambda signum, frame: asyncio.ensure_future(shutdown()))
+    # Queue process
+    queue_future = executor.submit(flask_queue_emit())
 
     # 创建事件循环
     loop = asyncio.get_event_loop()
-
     try:
         # 运行事件循环
-        loop.run_until_complete(exit_event.wait())
+        loop.run_forever()
     finally:
         # 取消 mitmproxy 和 Flask 任务
         mitmdump_future.cancel()
