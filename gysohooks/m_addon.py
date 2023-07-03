@@ -24,7 +24,7 @@ class GysoAddon:
             'raw': flow.request.get_text(),
             'timestamp': str(request_time),
         }
-        uuid_dict[str(request_time)] = random_uuid
+        # uuid_dict[str(request_time)] = random_uuid
         req_package = json.dumps(request_info)
         self.queue_m.put(req_package)
 
@@ -44,5 +44,5 @@ class GysoAddon:
             'time_diff': str(time_diff),
         }
 
-        res_package = json.dumps(response_info)
-        self.queue_m.put(res_package)
+        # res_package = json.dumps(response_info)
+        # self.queue_m.put(res_package)
