@@ -1,0 +1,65 @@
+@charset "UTF-8";
+body {
+    display: flex;
+    height: 100vh;
+    margin: 0;
+}
+
+.left-section {
+    width: 40%;
+    background-color: lightgray;
+    overflow: auto;
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.menu li {
+    padding: 10px;
+    background-color: lightgray;
+    cursor: pointer;
+    position: relative;
+}
+
+.menu li::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: gray;
+}
+
+.menu li:last-child::after {
+    #display: none;
+    /* 最后一个菜单项不显示分割线 */
+}
+
+.menu li:hover {
+    background-color: gray;
+}
+
+.menu li.selected {
+    background-color: darkgray; /* 选中状态的背景色 */
+}
+
+.right-section {
+    flex: 1;
+    overflow: auto;
+}
+
+.content_left {
+    padding: 2px;
+}
+
+.content_right {
+    padding: 20px;
+}

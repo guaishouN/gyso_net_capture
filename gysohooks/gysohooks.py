@@ -18,7 +18,7 @@ cors = CORS(app)
 @app.route("/", methods=("GET", "POST"))
 @cross_origin()  # 允许跨源访问该路由
 def index():
-    return render_template("data.html")
+    return render_template("test.html")
 
 
 @socketio.on('connect')
@@ -78,12 +78,6 @@ def flask_queue_emit():
 if __name__ == '__main__':
     # 创建线程池
     executor = ThreadPoolExecutor(max_workers=3)
-<<<<<<< Updated upstream
-=======
-
-    # 在线程池中运行 mitmproxy
-    mitmdump_future = executor.submit(asyncio.run, run_mitmdump())
->>>>>>> Stashed changes
 
     # 在线程池中运行 Flask
     flask_future = executor.submit(run_flask)
