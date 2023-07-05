@@ -1,22 +1,39 @@
-const itemBlock =
-    '<div id="item-message-block" class="d-flex p-3 border-top color-bg-accent">' +
-    '<div id="item-message" class="overflow-hidden flex-self-center">' + '</div>' +
-    '</div>'
+const baseItem = $('#base-item').clone().removeAttr('id').removeClass('d-none');
 
-var socket = io.connect('http://127.0.0.1:5000');
+const socket = io.connect('http://127.0.0.1:5000');
+
+$(document).ready(function () {
+    //baseItem.appendTo('#capture-list').show();
+});
+
 socket.on('connect', function () {
     console.log('Connected to server');
 });
 
 socket.on('response', function (data) {
     console.log('Received response:', data);
-    const netItem = $(itemBlock).clone(true);
-    netItem.attr("id", 'item');
-    netItem.find('#item-message').text(data);
-    $('#chat-list').append(netItem);
+    let netItem = baseItem.clone(true);
+    netItem.find('#base-item-url').text(data);
+    netItem.appendTo('#capture-list').show();
 });
 
+$('#clear-data').click(() => {
+    $('#capture-list').empty();
+})
+
+$('#export-data').click(() => {
+
+})
+
+$('#import-data').click(() => {
+
+})
+
+$('#stop-start-capture').click(() => {
+
+})
+
 function sendMessage() {
-    var message = document.getElementById('message').value;
+    let message = document.getElementById('message').value;
     socket.emit('message', message);
 }

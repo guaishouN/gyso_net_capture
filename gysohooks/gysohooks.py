@@ -18,7 +18,7 @@ cors = CORS(app)
 @app.route("/", methods=("GET", "POST"))
 @cross_origin()  # 允许跨源访问该路由
 def index():
-    return render_template("test.html")
+    return render_template("data.html")
 
 
 @socketio.on('connect')
