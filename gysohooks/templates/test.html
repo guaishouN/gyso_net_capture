@@ -1,30 +1,81 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
+    <link rel="stylesheet" href="https://unpkg.com/@primer/css@20.8.3/dist/primer.css">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
     <meta charset="UTF-8">
+    <title>GysoNetCapture</title>
     <link rel="stylesheet" href="../static/net_capture_list.css">
-    <title>SH</title>
 </head>
 <body>
-<div class="left-section">
-    <!-- 左侧部分的内容 -->
-    <div class="content_left">
-        <ul class="menu">
-            <li>Item 1</li>
-            <li class="selected">Item 2</li>
-            <li>Item 3</li>
-        </ul>
-    </div>
+
+<div class="navtab">
+    <ul>
+        <li class="selected">网络会话列表</li>
+        <li>会话数据修改</li>
+        <li>连接状态</li>
+    </ul>
 </div>
-<div class="right-section">
-    <!-- 右侧部分的内容 -->
-    <div class="content_right">
-        <!-- 右侧内容 -->
-        <h3>Right Section</h3>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur consectetur urna nec malesuada
-            pharetra.</p>
-        <!-- 更多右侧内容 -->
+<div class="container">
+    <div class="left-section">
+        <!-- 左侧部分的内容 -->
+        <div class="content_left">
+            <p class="m-2">
+                <input class="form-control input-monospace" type="text" placeholder="filter" aria-label="SHA"/>
+                <select class="form-select" aria-label="Important decision">
+                    <option>https</option>
+                    <option value="option 2">http</option>
+                </select>
+                <span class="BtnGroup">
+                  <button class="BtnGroup-item btn " type="button">导出</button>
+                  <button class="BtnGroup-item btn" type="button">导入</button>
+                  <button class="BtnGroup-item btn" type="button">选择</button>
+                   <button class="BtnGroup-item btn btn-danger" type="button">停止</button>
+                  </span>
+            </p>
+            <ul class="menu">
+                <li class="Truncate">
+                    <span class="Label mr-1 Label--accent">get</span>
+                    <span class="Truncate-text Truncate-text--expandable">http://10.219.8.4/wiki/index.php/Toyota_23MM_Mid_AVN#.E8.BD.AF.E4.BB.B6.E5.8C.85.E8.B7.AF.E5.BE.84</span>
+                </li>
+                <li class="Truncate selected">
+                    <span class="Label mr-1 Label--accent">post</span>
+                    <span class="Truncate-text Truncate-text--expandable">http://10.219.8.4/wiki/index.php/Toyota_23MM_Mid_AVN#.E8.BD.AF.E4.BB.B6.E5.8C.85.E8.B7.AF.E5.BE.84</span>
+                </li>
+                <li class="Truncate">
+                    <span class="Label mr-1 Label--accent">get</span>
+                    <span class="Truncate-text Truncate-text--expandable">http://10.219.8.4/wiki/index.php/Toyota_23MM_Mid_AVN#.E8.BD.AF.E4.BB.B6.E5.8C.85.E8.B7.AF.E5.BE.84</span>
+                </li>
+                <li class="Truncate">
+                    <span class="Label mr-1 Label--open">post</span>
+                    <span class="Truncate-text Truncate-text--expandable">http://10.219.8.4/wiki/index.php/Toyota_23MM_Mid_AVN#.E8.BD.AF.E4.BB.B6.E5.8C.85.E8.B7.AF.E5.BE.84</span>
+                </li>
+                <li class="Truncate">
+                    <span class="Label mr-1 Label--accent">get</span>
+                    <span class="Truncate-text Truncate-text--expandable">http://10.219.8.4/wiki/index.php/Toyota_23MM_Mid_AVN#.E8.BD.AF.E4.BB.B6.E5.8C.85.E8.B7.AF.E5.BE.84</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="right-section">
+        <!-- 右侧部分的内容 -->
+        <div class="content_right">
+
+            <nav class="UnderlineNav">
+                <div class="UnderlineNav-body" role="tablist">
+                    <button class="UnderlineNav-item" role="tab" type="button" aria-selected="true">请求</button>
+                    <button class="UnderlineNav-item" role="tab" type="button">响应</button>
+                    <button class="UnderlineNav-item" role="tab" type="button">所有</button>
+                </div>
+            </nav>
+
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur consectetur urna nec malesuada
+                pharetra.</p>
+            <!-- 更多右侧内容 -->
+        </div>
     </div>
 </div>
 </body>
