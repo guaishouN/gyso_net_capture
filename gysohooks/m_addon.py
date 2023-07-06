@@ -64,7 +64,7 @@ class GysoAddon:
             'raw': flow.request.get_text(),
             'timestamp': str(request_time),
         }
-        uuid_dict[str(request_time)] = random_uuid
+        uuid_dict[str(int(request_time))] = random_uuid
         item: CaptureItem = CaptureItem(random_uuid)
         item.request = request_info
         cache[random_uuid] = item
@@ -77,12 +77,16 @@ class GysoAddon:
 
         self.queue_m.put(s_info)
 
-
     def response(self, flow: http.HTTPFlow) -> None:
         request_time = flow.request.timestamp_start
         response_time = flow.response.timestamp_end
         time_diff = response_time - request_time
-        uid = uuid_dict[str(request_time)]
+        key = str(int(request_time))
+        if key not in uuid_dict:
+            print("error time info!")
+            return
+
+        uid = uuid_dict[key]
         if uid not in cache:
             print("No request info found!!!")
             return
