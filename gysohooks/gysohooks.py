@@ -6,7 +6,7 @@ from mitmproxy.tools.dump import DumpMaster
 from flask import Flask, redirect, render_template, request, url_for, Markup, escape
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
-from m_addon import GysoAddon
+from m_addon import GysoAddon, get_capture_item_as_json
 
 app = Flask(__name__)
 queue_m = queue.Queue()
@@ -19,6 +19,11 @@ cors = CORS(app)
 @cross_origin()  # 允许跨源访问该路由
 def index():
     return render_template("data.html")
+
+
+@app.route("/captureDetail/<uid>", methods=['GET'])
+def capture_detail(uid):
+    return get_capture_item_as_json(uid)
 
 
 @socketio.on('connect')

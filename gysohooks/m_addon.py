@@ -14,7 +14,22 @@ def get_capture_item(uid: str):
         return None
 
 
-class SimpleInfo:
+def get_capture_item_as_json(uid: str):
+    if uid in cache:
+        capture_detail: CaptureItem = cache[uid]
+        result = {'uid': uid, 'code': 0, 'request': capture_detail.request, 'response': capture_detail.response}
+        return json.dumps(result)
+    else:
+        return json.dumps({
+            'code': 1,
+            'uid': uid,
+            'snap': '',
+            'request': '',
+            'response': ''
+        })
+
+
+class SnapInfo:
     """
     simple info for list
     """
@@ -26,6 +41,7 @@ class SimpleInfo:
 
     def to_json(self):
         return json.dumps({
+            'type': 'snap',
             'uid': self.uid,
             'method': self.method,
             'pretty_url': self.pretty_url
@@ -55,13 +71,12 @@ class GysoAddon:
         request_time = flow.request.timestamp_start
         random_uuid = str(uuid.uuid4())
         request_info = {
-            'uuid': random_uuid,
             'type': 'request',
+            'uuid': random_uuid,
             'url': flow.request.url,
             'method': flow.request.method,
             'headers': dict(flow.request.headers),
             'content': flow.request.content.decode(),
-            'raw': flow.request.get_text(),
             'timestamp': str(request_time),
         }
         uuid_dict[str(int(request_time))] = random_uuid
@@ -69,7 +84,7 @@ class GysoAddon:
         item.request = request_info
         cache[random_uuid] = item
 
-        s_info = SimpleInfo(
+        s_info = SnapInfo(
             random_uuid,
             flow.request.method,
             flow.request.pretty_url
@@ -93,14 +108,13 @@ class GysoAddon:
         item = cache[uid]
 
         response_info = {
-            'uuid': uid,
             'type': 'response',
+            'uuid': uid,
             'url': flow.request.url,
             'status_code': flow.response.status_code,
             'headers': dict(flow.response.headers),
             'content': flow.response.content.decode(),
             'timestamp': str(response_time),
-            'raw': flow.response.get_text(),
             'time_diff': str(time_diff),
         }
         item.response = response_info
