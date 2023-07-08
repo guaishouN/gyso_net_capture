@@ -1,7 +1,6 @@
 const baseItem = $('#base-item').clone().removeAttr('id').removeClass('d-none');
 const cache = {};
 const socket = io.connect('http://127.0.0.1:5000');
-let empty_capture = null
 let current_uid = ''
 
 class Capture{
@@ -14,6 +13,7 @@ class Capture{
 }
 $(document).ready(function () {
     //baseItem.appendTo('#capture-list').show();
+    $('#capture-detail').hide();
 });
 
 socket.on('connect', function () {
@@ -40,6 +40,7 @@ socket.on('response', function (data) {
 
 function snapInfo(snap) {
     console.log('Received response:', snap);
+    $('#capture-list-blank-tip').hide();
     let netItem = baseItem.clone(true);
     netItem.find('#base-item-url').text(snap.pretty_url);
     netItem.find('#base-item-type').text(snap.method);
@@ -68,6 +69,8 @@ function getCaptureDetail(uid) {
         parseDetail(capture);
         return;
     }
+    $('#capture-detail').show();
+    $("#capture-detail-blank").hide();
     $.ajax({
         url: "/captureDetail/"+uid,
         method: "GET",
@@ -97,8 +100,7 @@ function formatJSONToHTML(obj, indent = 0) {
 
 function parseDetail(captureDetail) {
     const format = formatJSONToHTML(captureDetail);
-    $("#capture-detail").empty();
-    $("#capture-detail").append(format);
+    $("#capture-detail").html(format);
 }
 
 
@@ -115,7 +117,8 @@ function responseInfo(response) {
 }
 
 $('#clear-data').click(() => {
-    $('#capture-list').empty();
+    $('#capture-list').find('li').remove();
+    $('#capture-list-blank-tip').show();
 })
 
 $('#export-data').click(() => {

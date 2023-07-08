@@ -70,13 +70,19 @@ class GysoAddon:
     def request(self, flow: http.HTTPFlow):
         request_time = flow.request.timestamp_start
         random_uuid = str(uuid.uuid4())
+        try:
+            content = flow.request.content.decode()
+        except UnicodeDecodeError:
+            content = "[(⊙o⊙)…， 这个数据抓包工具不能解析, 而不是没有request Body数据]"
+            print("Failed request decoded!! UnicodeDecodeError")
+
         request_info = {
             'type': 'request',
             'uuid': random_uuid,
             'url': flow.request.url,
             'method': flow.request.method,
             'headers': dict(flow.request.headers),
-            'content': flow.request.content.decode(),
+            'content': content,
             'timestamp': str(request_time),
         }
         uuid_dict[str(int(request_time))] = random_uuid
@@ -106,6 +112,11 @@ class GysoAddon:
             print("No request info found!!!")
             return
         item = cache[uid]
+        try:
+            content = flow.response.content.decode()
+        except UnicodeDecodeError:
+            content = "[(⊙o⊙)…， 这个数据抓包工具不能解析, 而不是没有response Body数据]"
+            print("Failed request decoded!! UnicodeDecodeError")
 
         response_info = {
             'type': 'response',
@@ -113,7 +124,7 @@ class GysoAddon:
             'url': flow.request.url,
             'status_code': flow.response.status_code,
             'headers': dict(flow.response.headers),
-            'content': flow.response.content.decode(),
+            'content': content,
             'timestamp': str(response_time),
             'time_diff': str(time_diff),
         }
