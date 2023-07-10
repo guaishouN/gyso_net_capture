@@ -3,7 +3,7 @@ const cache = {};
 const socket = io.connect('http://127.0.0.1:5000');
 let current_uid = ''
 
-class Capture{
+class Capture {
     constructor(uid, snap, request, response) {
         this.uid = uid;
         this.snap = snap;
@@ -11,6 +11,7 @@ class Capture{
         this.response = response;
     }
 }
+
 $(document).ready(function () {
     //baseItem.appendTo('#capture-list').show();
     $('#capture-detail').hide();
@@ -53,10 +54,10 @@ function snapInfo(snap) {
         console.log($(netItem).attr("id"))
         getCaptureDetail(snap.uid);
     });
-    cache[snap.uid] = new Capture(snap.uid,snap,null,null);
-    if(current_uid === ''){
+    cache[snap.uid] = new Capture(snap.uid, snap, null, null);
+    if (current_uid === '') {
         current_uid = snap.uid;
-        setTimeout(function (){
+        setTimeout(function () {
             getCaptureDetail(current_uid);
         }, 4000);
     }
@@ -64,7 +65,7 @@ function snapInfo(snap) {
 
 function getCaptureDetail(uid) {
     let capture = cache[uid];
-    if (capture.request != null){
+    if (capture.request != null) {
         console.log(capture);
         parseDetail(capture);
         return;
@@ -72,7 +73,7 @@ function getCaptureDetail(uid) {
     $('#capture-detail').show();
     $("#capture-detail-blank").hide();
     $.ajax({
-        url: "/captureDetail/"+uid,
+        url: "/captureDetail/" + uid,
         method: "GET",
         dataType: "json",
         success: function (captureDetail) {
@@ -86,21 +87,43 @@ function getCaptureDetail(uid) {
 }
 
 function formatJSONToHTML(obj, indent = 0) {
-  let output = '';
-  const indentString = '&nbsp;&nbsp;'.repeat(indent); // 使用两个空格作为缩进
-  for (let key in obj) {
-    if (typeof obj[key] === 'object' && obj[key] !== null) {
-      output += `${indentString}${key}:<br>${formatJSONToHTML(obj[key], indent + 1)}`;
-    } else {
-      output += `${indentString}${key}: ${obj[key]}<br>`;
+    let output = '';
+    const indentString = '&nbsp;&nbsp;'.repeat(indent); // 使用两个空格作为缩进
+    for (let key in obj) {
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+            output += `${indentString}${key}:<br>${formatJSONToHTML(obj[key], indent + 1)}`;
+        } else {
+            output += `${indentString}${key}: ${obj[key]}<br>`;
+        }
     }
-  }
-  return output;
+    return output;
 }
 
 function parseDetail(captureDetail) {
-    const format = formatJSONToHTML(captureDetail);
-    $("#capture-detail").html(format);
+    const code = captureDetail.code;
+    const request = captureDetail.request;
+    const response = captureDetail.response;
+    const request_info = {
+        'url': request.url,
+        'method': request.method,
+        'headers': formatJSONToHTML(request.headers),
+        'content': request.content,
+        'timestamp': new Date(parseInt(request.timestamp)).toLocaleString().replace(/:\d{1,2}$/,' '),
+    }
+    const response_info = {
+        'status_code': response.status_code,
+        'headers': formatJSONToHTML(response.headers),
+        'content': response.content,
+        'time_diff': response.time_diff,
+    }
+    const detail = $('#capture-detail');
+    detail.find('#capture-request-url').html('<b> '+request_info.method+'</b> <br>'+request_info.url);
+    detail.find('#capture-request-header-detail').html(request_info.headers);
+    detail.find('#capture-request-body-detail').text(request_info.content);
+
+    detail.find('#capture-response-state').html('<b>'+response_info.status_code+'</b> <br>Time consume:  '+response_info.time_diff+' ms');
+    detail.find('#capture-response-header-detail').html(response_info.headers);
+    detail.find('#capture-response-body-detail').text(response_info.content);
 }
 
 
