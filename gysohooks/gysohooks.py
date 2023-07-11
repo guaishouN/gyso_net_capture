@@ -71,7 +71,7 @@ async def run_mitmdump():
 
 
 def run_flask():
-    socketio.run(app, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
 
 
 def run_mitm_app():
@@ -120,10 +120,6 @@ def start_local_server():
         executor.shutdown(wait=False)
 
 
-def connect_to_server(url):
-    pass
-
-
 if __name__ == '__main__':
     p_argvs = run_argv_parse.cmd_parse()
     status = adb_local_exe.check_evn()
@@ -139,6 +135,6 @@ if __name__ == '__main__':
         else:
             print("connect_to_server", url)
             adb_local_exe.set_app_evn(is_local=False)
-            webbrowser.open("url")
-            connect_to_server(url)
+            webbrowser.open(url)
+            # connect_to_server(url)
 

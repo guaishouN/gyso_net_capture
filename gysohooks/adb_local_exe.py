@@ -42,7 +42,7 @@ def reverse_tcp():
 
 def send_broadcast_cmd():
     cmd = """
-    adb shell am start -n 'com.desaysv.dsvcarsettings/com.desaysv.dsvcarsettings.CarSettingsActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
+        adb shell am start -n 'com.desaysv.dsvcarsettings/com.desaysv.dsvcarsettings.CarSettingsActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
     """
     output = os.system(cmd)
     print("finish broadcast", output)
