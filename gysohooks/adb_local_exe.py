@@ -35,14 +35,24 @@ def get_devices() -> []:
         return result
 
 
-def reverse_tcp():
-    output: tuple = subprocess.getstatusoutput('adb reverse tcp:8080 tcp:8080')
+def reverse_tcp(proxyport):
+    output: tuple = subprocess.getstatusoutput(f'adb reverse tcp:{proxyport} tcp:{proxyport}')
     print(output)
 
 
-def send_broadcast_cmd():
-    cmd = """
-        adb shell am start -n 'com.desaysv.dsvcarsettings/com.desaysv.dsvcarsettings.CarSettingsActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
+def send_broadcast_cmd(action, host, proxyport, heartbeat):
+    """
+     adb shell am broadcast  -f 0x01000000  -c desaysv.intent.gysohook -a intent.action.start --es hostname 127.0.0.1 --ei port 8080  --ez heartbeat true
+     adb shell am broadcast  -f 0x01000000  -c desaysv.intent.gysohook -a intent.action.start --es hostname www.xxxx.com
+     adb shell am broadcast  -f 0x01000000  -c desaysv.intent.gysohook -a intent.action.start
+
+     if localhost
+        adb reverse tcp:8080 tcp:8080
+     [stop hook]
+    adb shell am broadcast  -f 0x01000000  -c desaysv.intent.gysohook -a intent.action.stop
+    """
+    cmd = f"""
+        adb shell am broadcast  -f 0x01000000  -c desaysv.intent.gysohook -a intent.action.{action} --es hostname {host} --ei port {proxyport}  --ez heartbeat {heartbeat}
     """
     output = os.system(cmd)
     print("finish broadcast", output)
@@ -55,9 +65,13 @@ def check_evn():
     return None
 
 
-def set_app_evn(is_local=True):
-    if is_local:
-        reverse_tcp()
-    send_broadcast_cmd()
-    print(f"adb set_app_evn finished, is local [{is_local}]")
-    return None
+def is_local(host: str):
+    return "127.0.0.1" == host.strip() or "localhost" == host.strip()
+
+
+def set_app_evn(action='start', host='127.0.0.1', proxyport=8080, heartbeat=False):
+    if is_local(host):
+        reverse_tcp(proxyport)
+    send_broadcast_cmd(action, host, proxyport, heartbeat)
+    print(f"adb set_app_evn finished, is local[{is_local}]action[{action}]"
+          f"host[{host}]proxyport[{proxyport}]heartbeat[{heartbeat}]")

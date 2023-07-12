@@ -7,9 +7,6 @@ from flask import Flask, redirect, render_template, request, url_for, Markup, es
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
 from m_addon import GysoAddon, get_capture_item_as_json
-import run_argv_parse
-import webbrowser
-import adb_local_exe
 
 app = Flask(__name__)
 queue_m = queue.Queue()
@@ -89,7 +86,7 @@ def flask_queue_emit():
         queue_m.task_done()
 
 
-def start_local_server():
+def start_server():
     # 创建线程池
     executor = ThreadPoolExecutor(max_workers=3)
 
@@ -121,20 +118,5 @@ def start_local_server():
 
 
 if __name__ == '__main__':
-    p_argvs = run_argv_parse.cmd_parse()
-    status = adb_local_exe.check_evn()
-    if p_argvs is None:
-        input("按任意键退出...")
-    else:
-        url = p_argvs['url']
-        if url == 'localhost':
-            print(f"start server on localhost")
-            webbrowser.open("http://127.0.0.1:5000")
-            adb_local_exe.set_app_evn()
-            start_local_server()
-        else:
-            print("connect_to_server", url)
-            adb_local_exe.set_app_evn(is_local=False)
-            webbrowser.open(url)
-            # connect_to_server(url)
+    start_server()
 
