@@ -54,7 +54,7 @@ def handle_message(data):
 
 async def run_mitmdump():
     # 创建 mitmproxy 的选项对象
-    mitm_options = options.Options()
+    mitm_options = options.Options(ssl_insecure=True)
 
     # 创建 mitmproxy 的主控制器对象
     mitm_master = DumpMaster(mitm_options)
