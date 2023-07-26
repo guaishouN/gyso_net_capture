@@ -21,7 +21,7 @@ def validate_address(address):
 
 def cmd_parse():
     """
-        python gysohook_client --action start --url 10.12.11.89 --proxyport 8080 --heartbeat false
+        python gysohook_client.py --action start --host 127.0.0.1 --proxyport 8080 --heartbeat true
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', type=str)
@@ -40,6 +40,8 @@ def cmd_parse():
 
     if action is not None and 'stop' == action.strip():
         action = 'stop'
+    else:
+        action = 'start'
 
     if proxyport is None or proxyport < 0 or proxyport > 0xFFFF:
         proxyport = 8080

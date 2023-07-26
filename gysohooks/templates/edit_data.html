@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/@primer/css@20.8.3/dist/primer.css">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <meta charset="UTF-8">
+    <title>GysoNetCapture</title>
+    <link rel="stylesheet" href="../static/net_capture_list.css">
+</head>
+<body>
+<div class="navtab">
+    <ul>
+        <li class="selected">网络会话列表</li>
+        <li>会话数据修改</li>
+        <li>连接状态</li>
+    </ul>
+</div>
+<div class="container">
+    <div class="left-section">
+        <!-- 左侧部分的内容 -->
+        <div class="content_left">
+            <p class="m-2">
+                <input class="form-control input-monospace" type="text" placeholder="filter" aria-label="SHA"/>
+                <select class="form-select" aria-label="Important decision">
+                    <option>https</option>
+                    <option value="option 2">http</option>
+                </select>
+                <span class="BtnGroup">
+                    <button id="export-data" class="BtnGroup-item btn " type="button">导出</button>
+                    <button id="import-data" class="BtnGroup-item btn" type="button">导入</button>
+                    <button id="clear-data" class="BtnGroup-item btn" type="button">清空</button>
+                    <button id="stop-start-capture" class="BtnGroup-item btn btn-danger" type="button">停止记录</button>
+                </span>
+            </p>
+            <ul id="capture-list" class="menu" style="background-color: lightgray">
+                <div id="capture-list-blank-tip" class="blankslate mt-10" style="background-color: lightgray">
+                    <h3 class="blankslate-heading">~还没有捕捉到会话数据~</h3>
+                    <p>可以打开<a>连接状态</a>查看连接信息</p>
+                </div>
+            </ul>
+        </div>
+    </div>
+    <div class="right-section">
+        <div class="content_right">
+            <nav class="UnderlineNav">
+                <div class="UnderlineNav-body" role="tablist">
+                    <button class="UnderlineNav-item" role="tab" type="button" aria-selected="true">请求&响应</button>
+                    <button class="UnderlineNav-item" role="tab" type="button">更多</button>
+                </div>
+            </nav>
+            <div>
+
+            </div>
+            <div id="capture-detail">
+                <div id="capture-detail-request" class="Box m-2 color-shadow-small color-bg-open">
+                    <div class="Box-row">
+                        <h5 class="m-0">请求信息 >></h5>
+                    </div>
+                    <div class="Box-row">
+                        <p id="capture-request-url" class="mb-0x">
+                            <b id="capture-request-method">GET</b> <br>http://www.taobao.com/
+                        </p>
+                    </div>
+                    <div id="capture-request-header" class="Box-row">
+                        <b>Headers</b> <br>
+                        <p id="capture-request-header-detail">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                            Curabitur consectetur urna nec
+                            malesuad
+                            apharetra.</p>
+                    </div>
+                    <div id="capture-request-body" class="Box-row">
+                        <b>Request body</b> <br>
+                        <p id="capture-request-body-detail">Lorem ipsum dolor sit amet, consectetur \n adipiscing elit. Curabitur consectetur urna nec
+                            malesuad
+                            apharetra.</p>
+                    </div>
+                </div>
+                <div id="capture-detail-response" class="Box m-2 color-shadow-small color-bg-done">
+                    <div class="Box-row">
+                        <h5 class="m-0">响应信息 >></h5>
+                    </div>
+                    <div id="capture-response-state" class="Box-row">
+                        <b>200</b> <br>
+                    </div>
+                    <div id="capture-response-header" class="Box-row">
+                        <b>Headers</b> <br>
+                        <p id="capture-response-header-detail" class="mb-0 color-fg-muted">Taxidermy live-edge mixtape,
+                            keytar tumeric locavore meh selvage
+                            deep
+                            v letterpress vexillologist lo-fi tousled church-key thundercats. Brooklyn bicycle rights
+                            tousled, marfa actually.</p>
+                    </div>
+                    <div id="capture-response-body" class="Box-row">
+                        <b>Response body</b> <br>
+                        <div id="capture-response-body-detail" style="white-space: pre-wrap">Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Curabitur consectetur urna nec
+                            malesuad
+                            apharetra.</div>
+                    </div>
+                </div>
+            </div>
+            <div id="capture-detail-blank" class="blankslate mt-11">
+                <h3 class="blankslate-heading">~空空如也~</h3>
+                <p>请单击左侧的抓包记录查看详情。</p>
+            </div>
+        </div>
+    </div>
+</div>
+<li id="base-item" class="Truncate d-none">
+    <span id="base-item-type" class="Label mr-1 Label--accent">get</span>
+    <span id="base-item-url" class="Truncate-text Truncate-text--expandable">http://10.219.8.4/wiki/index.php/Toyota_23MM_Mid_AVN#.E8.BD.AF.E4.BB.B6.E5.8C.85.E8.B7.AF.E5.BE.84</span>
+</li>
+</body>
+<script src="{{ url_for('static', filename='data.js') }}"></script>
+</html>
+

@@ -3,7 +3,7 @@ import queue
 from concurrent.futures import ThreadPoolExecutor
 from mitmproxy import proxy, options, exceptions
 from mitmproxy.tools.dump import DumpMaster
-from flask import Flask, redirect, render_template, request, url_for, Markup, escape
+from flask import Flask, redirect, render_template, request, url_for, Markup, escape, jsonify
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
 from m_addon import GysoAddon, get_capture_item_as_json
