@@ -1,20 +1,25 @@
+import binascii
 import json
+
+from flask import jsonify
+
 from mitmproxy import ctx, http, dns
 
-cache = {}
+CACHE = {}
+EMIT_SET: set[str] | None = set()
 
 
 def get_capture_item(uid: str):
-    if uid in cache:
-        return cache[uid]
+    if uid in CACHE:
+        return CACHE[uid]
     else:
         return None
 
 
 def get_capture_item_as_json(uid: str):
-    if uid in cache:
+    if uid in CACHE:
         print(f'get uid={uid}')
-        capture_detail: CaptureItem = cache[uid]
+        capture_detail: CaptureItem = CACHE[uid]
         result = {'uid': uid, 'code': 0, 'request': capture_detail.request, 'response': capture_detail.response}
         return json.dumps(result)
     else:
@@ -70,21 +75,64 @@ class GysoAddon:
         self.app = app_s
         self.queue_m = queue_s
 
-    def requestheaders(self, flow: http.HTTPFlow):
-        s_info = SnapInfo(
-            flow.id,
-            flow.request.method,
-            flow.request.pretty_url
-        ).to_json()
+    def ensure_cache(self, flow: http.HTTPFlow):
+        uid = flow.id
+        if uid not in CACHE:
+            item: CaptureItem = CaptureItem(uid)
+            CACHE[uid] = item
 
-        self.queue_m.put(s_info)
+    def check_emit_flow(self, flow):
+        self.ensure_cache(flow)
+        if flow is not None and flow.id not in EMIT_SET:
+            s_info = SnapInfo(
+                flow.id,
+                flow.request.method,
+                flow.request.pretty_url
+            ).to_json()
+            self.queue_m.put(s_info)
+            request_info = {
+                'type': 'request',
+                'uuid': flow.id,
+                'url': flow.request.url,
+                'http_version': flow.request.http_version,
+                'headers': dict(flow.request.headers),
+                'content': "",
+                'timestamp_start': flow.request.timestamp_start,
+                'timestamp_end': flow.request.timestamp_end,
+                'host': flow.request.host,
+                'port': flow.request.port,
+                'method': flow.request.method,
+                'scheme': flow.request.scheme,
+                'authority': flow.request.authority,
+                'path': flow.request.path,
+            }
+            item = CACHE[flow.id]
+            item.request = request_info
+
+
+    def http_connect(self, flow: http.HTTPFlow):
+        """
+        HTTPS will come here first; HTTP on requestheaders
+        """
+        print(f'http_connect {str(flow)}')
+        self.check_emit_flow(flow)
+
+    def http_connect_upstream(self, flow: http.HTTPFlow):
+        print(f'http_connect_upstream {str(flow)}')
+
+    def requestheaders(self, flow: http.HTTPFlow):
+        """
+        HTTP will come here first
+        """
+        print(f'requestheaders {str(flow)}')
+        self.check_emit_flow(flow)
         pass
 
     def request(self, flow: http.HTTPFlow):
-        request_time = flow.request.timestamp_start
+        print(f'request {str(flow)}')
         uid = flow.id
         try:
-            content = flow.request.content.decode()
+            content = flow.request.content.decode('utf-8', 'ignore')
         except UnicodeDecodeError:
             content = "[(⊙o⊙)…， 这个数据抓包工具不能解析, 而不是没有request Body数据]"
             print("Failed request decoded!! UnicodeDecodeError")
@@ -93,27 +141,37 @@ class GysoAddon:
             'type': 'request',
             'uuid': uid,
             'url': flow.request.url,
-            'method': flow.request.method,
+            'http_version': flow.request.http_version,
             'headers': dict(flow.request.headers),
             'content': content,
-            'timestamp': str(request_time),
+            'timestamp_start': flow.request.timestamp_start,
+            'timestamp_end': flow.request.timestamp_end,
+            'host': flow.request.host,
+            'port': flow.request.port,
+            'method': flow.request.method,
+            'scheme': flow.request.scheme,
+            'authority': flow.request.authority,
+            'path': flow.request.path,
         }
-        item: CaptureItem = CaptureItem(uid)
+        self.ensure_cache(flow)
+        item = CACHE[uid]
         item.request = request_info
-        cache[uid] = item
+
 
     def responseheaders(self, flow: http.HTTPFlow):
+        print(f'responseheaders {str(flow)}')
         pass
 
+
     def response(self, flow: http.HTTPFlow) -> None:
+        print(f'response {str(flow)}')
         request_time = flow.request.timestamp_start
         response_time = flow.response.timestamp_end
         time_diff = response_time - request_time
         uid = flow.id
-        if uid not in cache:
-            print("No request info found!!!")
-            return
-        item = cache[uid]
+        self.ensure_cache(flow)
+        item = CACHE[uid]
+
         try:
             content = flow.response.content.decode()
         except UnicodeDecodeError:
@@ -129,15 +187,19 @@ class GysoAddon:
             'content': content,
             'timestamp': str(response_time),
             'time_diff': str(time_diff),
+            'http_version': flow.response.http_version,
+            'timestamp_start': flow.response.timestamp_start,
+            'timestamp_end': flow.response.timestamp_end,
+            'reason': flow.response.reason,
         }
         item.response = response_info
         # res_package = json.dumps(response_info)
         # self.queue_m.put(res_package)
 
     def error(self, flow: http.HTTPFlow):
-        print(f"error  {flow}")
+        print(f"error{flow}")
         pass
 
     def dns_request(self, flow: dns.DNSFlow):
-        print(f"error dns_request {flow}")
+        print(f'dns_request {str(flow)}')
         pass
