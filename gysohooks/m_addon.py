@@ -1,8 +1,4 @@
-import binascii
 import json
-
-from flask import jsonify
-
 from mitmproxy import ctx, http, dns
 
 CACHE = {}
@@ -18,10 +14,22 @@ def get_capture_item(uid: str):
 
 def get_capture_item_as_json(uid: str):
     if uid in CACHE:
-        print(f'get uid={uid}')
-        capture_detail: CaptureItem = CACHE[uid]
-        result = {'uid': uid, 'code': 0, 'request': capture_detail.request, 'response': capture_detail.response}
-        return json.dumps(result)
+        sdf:str = ""
+        try:
+            print(f'get uid={uid}')
+            capture_detail: CaptureItem = CACHE[uid]
+            response = capture_detail.response if capture_detail.response is not None else ""
+            result = {'uid': uid,
+                      'code': 0,
+                      'request': capture_detail.request,
+                      'response': response,
+                      'error_msg': capture_detail.error_msg}
+            sdf = json.dumps(result)
+
+        except Exception as e:
+            print(str(e))
+        finally:
+            return sdf
     else:
         print(f'get error uid={uid}')
         return json.dumps({
@@ -29,7 +37,8 @@ def get_capture_item_as_json(uid: str):
             'uid': uid,
             'snap': '',
             'request': '',
-            'response': ''
+            'response': '',
+            'error_msg': ''
         })
 
 
@@ -57,7 +66,8 @@ class CaptureItem:
     full  info for detail
     """
     request: dict = ...
-    response: dict = ...
+    response: dict = None
+    error_msg: str = ""
 
     def __init__(self, uid: str):
         self.uid = uid
@@ -193,11 +203,12 @@ class GysoAddon:
             'reason': flow.response.reason,
         }
         item.response = response_info
-        # res_package = json.dumps(response_info)
-        # self.queue_m.put(res_package)
 
     def error(self, flow: http.HTTPFlow):
-        print(f"error{flow}")
+        self.ensure_cache(flow)
+        item: CaptureItem = CACHE[flow.id]
+        item.error_msg = "hahaha"
+        print(f"error flow {item.error_msg}")
         pass
 
     def dns_request(self, flow: dns.DNSFlow):
