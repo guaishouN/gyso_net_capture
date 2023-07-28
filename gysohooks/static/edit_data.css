@@ -1,0 +1,106 @@
+@charset "UTF-8";
+body{}
+.navtab {
+  display: flex;
+  justify-content: left;
+  background-color: darkgray; /* 选中状态的背景色 */
+}
+
+.navtab ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  font-weight: bold;
+}
+
+.navtab li {
+    padding: 15px 10px;
+    cursor: pointer;
+}
+
+.navtab li:hover {
+    background-color: lightsteelblue;
+}
+
+.navtab li.selected {
+   background-color: gray;
+}
+
+.container{
+   display: flex;
+   height: 100vh;
+   margin: 0;
+}
+
+.left-section {
+    width: 20%;
+    background-color: lightgray;
+    overflow: auto;
+}
+
+.right-section {
+    flex:1;
+    overflow: auto;
+}
+
+.last-section {
+    width: 40%;
+    overflow: auto;
+}
+
+
+.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.menu li {
+    padding: 10px;
+    background-color: GhostWhite;
+    cursor: pointer;
+    position: relative;
+    width: 100%;
+}
+
+.menu li::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: gray;
+}
+
+.menu li:last-child::after {
+    /* display: none; 最后一个菜单项不显示分割线 */
+}
+
+.menu li:hover {
+    background-color: Lavender ;
+}
+
+.menu li.selected {
+    background-color: LightSkyBlue ; /* 选中状态的背景色 */
+}
+.menu li span {
+
+    min-width:50px
+
+}
+
+
+.content_left {
+    flex: 0.2;
+    padding: 0px;
+}
+
+.content_right{
+    padding-left: 10px;
+}
