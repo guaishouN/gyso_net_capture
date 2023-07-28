@@ -1,6 +1,9 @@
 const baseItem = $('#base-item').clone().removeAttr('id').removeClass('d-none');
 const cache = {};
-const socket = io.connect('http://127.0.0.1:5000');
+const socketHostname = window.location.hostname;
+const socketPort = 5000;
+const socket = io.connect(`http://${socketHostname}:${socketPort}`);
+
 let current_uid = ''
 
 class Capture {
