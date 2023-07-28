@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/@primer/css@20.8.3/dist/primer.css">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <meta charset="UTF-8">
+    <title>GysoNetCapture</title>
+    <link rel="stylesheet" href="../static/net_capture_list.css">
+</head>
+
+<body>
+<div class="navtab">
+    <ul>
+        <li data-href="/">会话列表</li>
+        <li data-href="/edit">数据纂改</li>
+        <li class="selected" data-href="/settings">设置及使用说明</li>
+    </ul>
+</div>
+</body>
+<script src="{{ url_for('static', filename='data.js') }}"></script>
+</html>

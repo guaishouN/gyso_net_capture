@@ -18,6 +18,15 @@ class Capture {
 $(document).ready(function () {
     //baseItem.appendTo('#capture-list').show();
     $('#capture-detail').hide();
+    $('.navtab li').on('click', function() {
+        if ($(this).hasClass('selected')) {
+            return;
+        }
+        const url = $(this).attr('data-href');
+        if (url) {
+            window.location.href = url;
+        }
+    });
 });
 
 socket.on('connect', function () {

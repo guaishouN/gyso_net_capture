@@ -21,10 +21,16 @@ def index():
     return render_template("data.html")
 
 
-@app.route("/connect", methods=("GET", "POST"))
+@app.route("/edit", methods=("GET", "POST"))
+@cross_origin()  # 允许跨源访问该路由
+def edit():
+    return render_template("edit_data.html")
+
+
+@app.route("/settings", methods=("GET", "POST"))
 @cross_origin()
 def connect():
-    return render_template("connect.html")
+    return render_template("settings.html")
 
 
 @app.route("/captureDetail/<uid>", methods=['GET'])
@@ -119,4 +125,3 @@ def start_server():
 
 if __name__ == '__main__':
     start_server()
-

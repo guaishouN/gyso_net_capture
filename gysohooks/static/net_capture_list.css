@@ -20,7 +20,7 @@ body{}
 }
 
 .navtab li:hover {
-    background-color: gray;
+    background-color: lightsteelblue;
 }
 
 .navtab li.selected {
