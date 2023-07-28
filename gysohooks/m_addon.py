@@ -2,7 +2,6 @@ import json
 from mitmproxy import ctx, http, dns
 
 CACHE = {}
-EMIT_SET: set[str] | None = set()
 
 
 def get_capture_item(uid: str):
@@ -14,7 +13,7 @@ def get_capture_item(uid: str):
 
 def get_capture_item_as_json(uid: str):
     if uid in CACHE:
-        sdf:str = ""
+        sdf: str = ""
         try:
             print(f'get uid={uid}')
             capture_detail: CaptureItem = CACHE[uid]
@@ -76,6 +75,13 @@ class CaptureItem:
         return self.uid
 
 
+def ensure_cache(flow: http.HTTPFlow):
+    uid = flow.id
+    if uid not in CACHE:
+        item: CaptureItem = CaptureItem(uid)
+        CACHE[uid] = item
+
+
 class GysoAddon:
     """
        Http and Https 拦截
@@ -85,15 +91,9 @@ class GysoAddon:
         self.app = app_s
         self.queue_m = queue_s
 
-    def ensure_cache(self, flow: http.HTTPFlow):
-        uid = flow.id
-        if uid not in CACHE:
-            item: CaptureItem = CaptureItem(uid)
-            CACHE[uid] = item
-
     def check_emit_flow(self, flow):
-        self.ensure_cache(flow)
-        if flow is not None and flow.id not in EMIT_SET:
+        ensure_cache(flow)
+        if flow is not None:
             s_info = SnapInfo(
                 flow.id,
                 flow.request.method,
@@ -163,7 +163,7 @@ class GysoAddon:
             'authority': flow.request.authority,
             'path': flow.request.path,
         }
-        self.ensure_cache(flow)
+        ensure_cache(flow)
         item = CACHE[uid]
         item.request = request_info
 
@@ -179,7 +179,7 @@ class GysoAddon:
         response_time = flow.response.timestamp_end
         time_diff = response_time - request_time
         uid = flow.id
-        self.ensure_cache(flow)
+        ensure_cache(flow)
         item = CACHE[uid]
 
         try:
@@ -205,9 +205,27 @@ class GysoAddon:
         item.response = response_info
 
     def error(self, flow: http.HTTPFlow):
-        self.ensure_cache(flow)
+        ensure_cache(flow)
         item: CaptureItem = CACHE[flow.id]
-        item.error_msg = "hahaha"
+        request_time = flow.request.timestamp_start
+        time_diff = request_time
+        try:
+            content = flow.response.content.decode()
+        except UnicodeDecodeError:
+            content = "[(⊙o⊙)…， 这个数据抓包工具不能解析, 而不是没有response Body数据]"
+            print("Failed request decoded!! UnicodeDecodeError")
+        item.response = {
+            'type': 'response',
+            'uuid': flow.id,
+            'url': flow.request.url,
+            'status_code': flow.response.status_code,
+            'headers': dict(flow.response.headers),
+            'content': content,
+            'time_diff': str(time_diff),
+            'http_version': flow.response.http_version,
+            'timestamp_start': flow.response.timestamp_start,
+            'reason': flow.response.reason,
+        }
         print(f"error flow {item.error_msg}")
         pass
 
