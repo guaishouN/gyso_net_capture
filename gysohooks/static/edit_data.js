@@ -140,7 +140,7 @@ function parseDetail(captureDetail) {
 }
 
 function resetEditRequestInfo(request_info) {
-    if(request_info===''){
+    if (request_info === '') {
         return ''
     }
     const requestLine = `${request_info.method} ${request_info.path} ${request_info.http_version}`;
@@ -177,7 +177,7 @@ function isJson(dataStr) {
 }
 
 function resetEditResponseInfo(response_info) {
-    if(response_info===''){
+    if (response_info === '') {
         return ''
     }
     const responseLine = `${response_info.http_version} ${response_info.status_code} ${response_info.reason}`;
@@ -188,8 +188,8 @@ function resetEditResponseInfo(response_info) {
             headers += `${header}: ${value}\n`;
         }
     }
-   let formattedResponse = `${responseLine}\n${headers}\n`;
-   $('#edit-response-textarea-header').text(formattedResponse);
+    let formattedResponse = `${responseLine}\n${headers}\n`;
+    $('#edit-response-textarea-header').text(formattedResponse);
 
     let formattedContent = "";
     if (response_info.content) {
@@ -228,16 +228,30 @@ $('#clear-data').click(() => {
 })
 
 $('#import-data').click(() => {
+    const fileInput = $("#history-file-input")[0];
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("请选择一个历史数据作为基础修改数据");
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append("file", file);
+
+    // 发起AJAX请求上传文件
     $.ajax({
-        url: "/load_dumps_file",
-        method: "GET",
-        dataType: "text",
-        success: function (text) {
-            console.log("click load_dumps_file file "+ text);
+        url: "/upload_history_file",
+        method: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            alert("File uploaded successfully.");
         },
-        error: function (error) {
-            console.error("Error fetching conversations:", error);
-        },
+        error: function (xhr, status, error) {
+            console.error("Error uploading file:", error);
+        }
     });
 })
 

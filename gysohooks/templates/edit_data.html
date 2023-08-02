@@ -21,15 +21,11 @@
         <!-- 左侧部分的内容 -->
         <div class="content_left">
             <p class="m-2">
-                <input class="form-control input-monospace" type="text" placeholder="filter" aria-label="SHA"/>
-                <select class="form-select" aria-label="Important decision">
-                    <option>https</option>
-                    <option value="option 2">http</option>
-                </select>
+                <input class="mb-2 color-bg-danger" type="file" id="history-file-input">
                 <span class="BtnGroup">
-                    <button id="import-data" class="BtnGroup-item btn" type="button">导入</button>
+                    <button id="import-data" class="BtnGroup-item btn" type="button">导入历史数据</button>
                     <button id="clear-data" class="BtnGroup-item btn" type="button">清空</button>
-                    <button id="stop-start-capture" class="BtnGroup-item btn btn-danger" type="button">停止拦截</button>
+                    <button id="stop-start-capture" class="BtnGroup-item btn btn-danger" type="button">应用篡改</button>
                 </span>
             </p>
             <ul id="capture-list" class="menu" style="background-color: lightgray">

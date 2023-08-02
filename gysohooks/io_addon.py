@@ -1,3 +1,9 @@
+import os
+from typing import BinaryIO
+from mitmproxy import io, http
+from mitmproxy.exceptions import FlowReadException
+import pprint
+
 """
 Generate a mitmproxy dump file.
 
@@ -11,14 +17,24 @@ to multiple files in parallel.
 Read a mitmproxy dump file.
 """
 
-from typing import BinaryIO
-from mitmproxy import io, http
-from mitmproxy.exceptions import FlowReadException
-import pprint
-import sys
-
 FLOW_CACHE = set()
-path = "dumps.data"
+folder_path = "./data"
+path = folder_path+"/dumps.data"
+
+
+def checkout_data_dir():
+    # 创建文件夹
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    # 创建文件
+    if not os.path.exists(path):
+        with open(path, "w+") as f:
+            # 可以在这里写入文件内容，如果需要的话
+            pass
+
+
+checkout_data_dir()
 
 
 class GysoHooksIO:
@@ -40,11 +56,11 @@ class GysoHooksIO:
             pp = pprint.PrettyPrinter(indent=4)
             try:
                 for f in freader.stream():
-                    print(f)
+                    print(f.id)
                     if isinstance(f, http.HTTPFlow):
                         print(f.request.host)
                     pp.pprint(f.get_state())
-                    print("")
+
             except FlowReadException as e:
                 print(f"Flow file corrupted: {e}")
 
@@ -52,5 +68,6 @@ class GysoHooksIO:
         FLOW_CACHE.clear()
 
     def done(self):
+
         FLOW_CACHE.clear()
         self.f.close()

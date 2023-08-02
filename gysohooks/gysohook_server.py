@@ -4,6 +4,7 @@ import queue
 from concurrent.futures import ThreadPoolExecutor
 
 import mitmproxy
+from gysohooks import io_addon
 from mitmproxy import proxy, options, exceptions, ctx
 from mitmproxy.tools.dump import DumpMaster
 from flask import Flask, redirect, render_template, request, url_for, Markup, escape, jsonify, send_file, json, \
@@ -18,7 +19,7 @@ queue_m = queue.Queue()
 exit_event = asyncio.Event()
 socketio = SocketIO(app, cors_allowed_origins="*")
 cors = CORS(app)
-io_addon: GysoHooksIO = ...
+gysoio_addon: GysoHooksIO = ...
 
 
 @app.route("/", methods=("GET", "POST"))
@@ -46,16 +47,25 @@ def capture_detail(uid):
 
 @app.route("/dumps_file")
 def save_dumps_file():
-    if io_addon is not None:
-        io_addon.dumps_as_to_file()
-    return send_file("dumps.data", mimetype='text/plain', as_attachment=True)
+    if gysoio_addon is not None:
+        gysoio_addon.dumps_as_to_file()
+    return send_file(io_addon.path, mimetype='text/plain', as_attachment=True)
 
 
-@app.route("/load_dumps_file")
+@app.route("/upload_history_file", methods=["POST"])
 def load_dumps_file():
-    if io_addon is not None:
-        io_addon.load_file()
-    return "done"
+    if "file" not in request.files:
+        return "No file part", 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return "No selected file", 400
+
+    # 保存上传的文件到指定路径
+    file.save(io_addon.path)
+    if gysoio_addon is not None:
+        gysoio_addon.load_file()
+    return "File uploaded successfully", 200
 
 
 @socketio.on('connect')
@@ -87,11 +97,11 @@ async def run_mitmdump():
 
     # 创建 Addon 实例并传递队列
     addon = GysoAddon(app, queue_m)
-    global io_addon
-    io_addon = GysoHooksIO()
+    global gysoio_addon
+    gysoio_addon = GysoHooksIO()
 
     mitm_master.addons.add(addon)
-    mitm_master.addons.add(io_addon)
+    mitm_master.addons.add(gysoio_addon)
 
     # 启动 mitmproxy
     await mitm_master.run()
