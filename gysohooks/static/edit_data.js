@@ -59,11 +59,13 @@ function snapInfo(snap) {
     netItem.find('#base-item-type').text(snap.method);
     netItem.attr('id', snap.uid);
     netItem.appendTo('#capture-list').show();
+    console.log("before uid ", $(netItem).attr("id"), snap.uid)
+    console.log("before url ", snap.pretty_url)
     netItem.click(() => {
         current_uid = $(netItem).attr("id");
         $('#capture-list').children().removeClass('selected');
         $(netItem).addClass('selected');
-        console.log($(netItem).attr("id"))
+        console.log("after ",$(netItem).attr("id"))
         getCaptureDetail(snap.uid);
     });
     cache[snap.uid] = new Capture(snap.uid, snap, null, null);
@@ -71,7 +73,7 @@ function snapInfo(snap) {
         current_uid = snap.uid;
         setTimeout(function () {
             getCaptureDetail(current_uid);
-        }, 4000);
+        }, 1000);
     }
 }
 
@@ -247,7 +249,23 @@ $('#import-data').click(() => {
         processData: false,
         contentType: false,
         success: function (data) {
-            alert("File uploaded successfully.");
+            console.log(data)
+            $.ajax({
+                url: "/get_edit_list",
+                method: "GET",
+                dataType: "json",
+                success: function (jsonList) {
+                    console.log(jsonList)
+                    for (let i = 0; i < jsonList.length; i++) {
+                        let snap = jsonList[i];
+                        snapInfo(snap);
+                    }
+                },
+                error: function (error) {
+                    console.error("Error fetching conversations:", error);
+                },
+
+            });
         },
         error: function (xhr, status, error) {
             console.error("Error uploading file:", error);

@@ -3,7 +3,6 @@ from mitmproxy import ctx, http, dns
 
 CACHE = {}
 
-
 def get_capture_item(uid: str):
     if uid in CACHE:
         return CACHE[uid]
@@ -51,13 +50,16 @@ class SnapInfo:
         self.method = method
         self.pretty_url = pretty_url
 
-    def to_json(self):
-        return json.dumps({
+    def to_dict(self):
+        return {
             'type': 'snap',
             'uid': self.uid,
             'method': self.method,
             'pretty_url': self.pretty_url
-        })
+        }
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
 
 
 class CaptureItem:
@@ -87,7 +89,7 @@ class GysoAddon:
        Http and Https 拦截
     """
 
-    def __init__(self, app_s, queue_s):
+    def __init__(self, app_s=None, queue_s=None):
         self.app = app_s
         self.queue_m = queue_s
 
@@ -229,3 +231,10 @@ class GysoAddon:
     def dns_request(self, flow: dns.DNSFlow):
         print(f'dns_request {str(flow)}')
         pass
+
+
+def add_cache(gyso_addon: GysoAddon, flow: http.HTTPFlow):
+    ensure_cache(flow)
+    if gyso_addon is not None:
+        gyso_addon.request(flow)
+        gyso_addon.response(flow)

@@ -2,8 +2,6 @@ import os
 from typing import BinaryIO
 from mitmproxy import io, http
 from mitmproxy.exceptions import FlowReadException
-import pprint
-
 """
 Generate a mitmproxy dump file.
 
@@ -17,7 +15,7 @@ to multiple files in parallel.
 Read a mitmproxy dump file.
 """
 
-FLOW_CACHE = set()
+FLOW_CACHE = set[http.HTTPFlow]()
 folder_path = "./data"
 path = folder_path+"/dumps.data"
 
@@ -46,6 +44,7 @@ class GysoHooksIO:
         print(str(flow))
         FLOW_CACHE.add(flow)
 
+
     def dumps_as_to_file(self):
         for flow in FLOW_CACHE:
             self.w.add(flow)
@@ -53,13 +52,13 @@ class GysoHooksIO:
     def load_file(self):
         with open(path, "rb") as logfile:
             freader = io.FlowReader(logfile)
-            pp = pprint.PrettyPrinter(indent=4)
+            # pp = pprint.PrettyPrinter(indent=4)
             try:
                 for f in freader.stream():
-                    print(f.id)
                     if isinstance(f, http.HTTPFlow):
-                        print(f.request.host)
-                    pp.pprint(f.get_state())
+                        FLOW_CACHE.add(f)
+                        print(f'loaded ---- {f.id} : {f.request.host}')
+                    # pp.pprint(f.get_state())
 
             except FlowReadException as e:
                 print(f"Flow file corrupted: {e}")

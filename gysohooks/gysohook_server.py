@@ -1,18 +1,17 @@
 import asyncio
-import os
+import json
 import queue
 from concurrent.futures import ThreadPoolExecutor
 
 import mitmproxy
-from gysohooks import io_addon
-from mitmproxy import proxy, options, exceptions, ctx
+from gysohooks import io_addon, m_addon
+from mitmproxy import options, ctx
 from mitmproxy.tools.dump import DumpMaster
-from flask import Flask, redirect, render_template, request, url_for, Markup, escape, jsonify, send_file, json, \
-    make_response
+from flask import Flask, render_template, request, send_file, jsonify
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
-from m_addon import GysoAddon, get_capture_item_as_json
-from io_addon import GysoHooksIO
+from m_addon import GysoAddon, get_capture_item_as_json, SnapInfo
+from io_addon import GysoHooksIO, FLOW_CACHE
 
 app = Flask(__name__)
 queue_m = queue.Queue()
@@ -63,10 +62,21 @@ def load_dumps_file():
 
     # 保存上传的文件到指定路径
     file.save(io_addon.path)
-    if gysoio_addon is not None:
-        gysoio_addon.load_file()
     return "File uploaded successfully", 200
 
+
+@app.route("/get_edit_list", methods=["GET"])
+def get_edit_list():
+    if gysoio_addon is not None:
+        gysoio_addon.load_file()
+
+    snap_list = []
+    ab = GysoAddon()
+    for flow in FLOW_CACHE:
+        s = SnapInfo(flow.id, flow.request.method, flow.request.pretty_url)
+        m_addon.add_cache(ab, flow)
+        snap_list.append(s.to_dict())
+    return json.dumps(snap_list)
 
 @socketio.on('connect')
 def handle_connect():
