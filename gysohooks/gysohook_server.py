@@ -1,18 +1,24 @@
 import asyncio
+import os
 import queue
 from concurrent.futures import ThreadPoolExecutor
-from mitmproxy import proxy, options, exceptions
+
+import mitmproxy
+from mitmproxy import proxy, options, exceptions, ctx
 from mitmproxy.tools.dump import DumpMaster
-from flask import Flask, redirect, render_template, request, url_for, Markup, escape, jsonify
+from flask import Flask, redirect, render_template, request, url_for, Markup, escape, jsonify, send_file, json, \
+    make_response
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
 from m_addon import GysoAddon, get_capture_item_as_json
+from io_addon import GysoHooksIO
 
 app = Flask(__name__)
 queue_m = queue.Queue()
 exit_event = asyncio.Event()
 socketio = SocketIO(app, cors_allowed_origins="*")
 cors = CORS(app)
+io_addon: GysoHooksIO = ...
 
 
 @app.route("/", methods=("GET", "POST"))
@@ -36,6 +42,20 @@ def connect():
 @app.route("/captureDetail/<uid>", methods=['GET'])
 def capture_detail(uid):
     return get_capture_item_as_json(uid)
+
+
+@app.route("/dumps_file")
+def save_dumps_file():
+    if io_addon is not None:
+        io_addon.dumps_as_to_file()
+    return send_file("dumps.data", mimetype='text/plain', as_attachment=True)
+
+
+@app.route("/load_dumps_file")
+def load_dumps_file():
+    if io_addon is not None:
+        io_addon.load_file()
+    return "done"
 
 
 @socketio.on('connect')
@@ -67,7 +87,11 @@ async def run_mitmdump():
 
     # 创建 Addon 实例并传递队列
     addon = GysoAddon(app, queue_m)
+    global io_addon
+    io_addon = GysoHooksIO()
+
     mitm_master.addons.add(addon)
+    mitm_master.addons.add(io_addon)
 
     # 启动 mitmproxy
     await mitm_master.run()
@@ -87,7 +111,7 @@ def flask_queue_emit():
     print("flask_queue_emit begin running")
     while True:
         package = queue_m.get()
-        print("flask_queue_emit  --- queue data", str(package))
+        # print("flask_queue_emit  --- queue data", str(package))
         socketio.emit('response', str(package))
         queue_m.task_done()
 
@@ -118,7 +142,7 @@ def start_server():
 
         # 关闭事件循环
         loop.close()
-
+        mitmproxy.ctx.master.shutdown()
         # 关闭线程池
         executor.shutdown(wait=False)
 

@@ -139,7 +139,7 @@ function parseDetail(captureDetail) {
     detail.find('#capture-response-body-detail').text(response_info.content);
 }
 
-function formatRequestInfo(request_info) {
+function resetEditRequestInfo(request_info) {
     if(request_info===''){
         return ''
     }
@@ -161,7 +161,7 @@ function formatRequestInfo(request_info) {
     if (request_info.content) {
         formattedRequest += JSON.stringify(request_info.content, null, 2);
     }
-    return formattedRequest;
+    $('#edit-request-textarea').text(formattedRequest);
 }
 
 function isJson(dataStr) {
@@ -176,7 +176,7 @@ function isJson(dataStr) {
     return false;
 }
 
-function formatResponseInfo(response_info) {
+function resetEditResponseInfo(response_info) {
     if(response_info===''){
         return ''
     }
@@ -188,26 +188,25 @@ function formatResponseInfo(response_info) {
             headers += `${header}: ${value}\n`;
         }
     }
+   let formattedResponse = `${responseLine}\n${headers}\n`;
+   $('#edit-response-textarea-header').text(formattedResponse);
 
-
-    let formattedResponse = `${responseLine}\n${headers}\n`;
+    let formattedContent = "";
     if (response_info.content) {
         try {
-            formattedResponse += JSON.stringify(response_info.content, null, 2);
+            formattedContent = JSON.stringify(response_info.content, null, 2);
         } catch (err) {
-            formattedResponse += response_info.content;
+            formattedContent = response_info.content;
         }
     }
-    return formattedResponse;
+    $('#edit-response-textarea-body').text(formattedContent);
 }
 
 function parseDetailToEdit(captureDetail) {
     const request_info = captureDetail.request;
     const response_info = captureDetail.response;
-    const formattedRequest = formatRequestInfo(request_info);
-    const formattedResponse = formatResponseInfo(response_info);
-    $('#edit-request-textarea').text(formattedRequest);
-    $('#edit-response-textarea').text(formattedResponse);
+    resetEditRequestInfo(request_info);
+    resetEditResponseInfo(response_info);
     $('#target-url').text(`${request_info.url}`);
 }
 
@@ -228,12 +227,18 @@ $('#clear-data').click(() => {
     $('#capture-list-blank-tip').show();
 })
 
-$('#export-data').click(() => {
-
-})
-
 $('#import-data').click(() => {
-
+    $.ajax({
+        url: "/load_dumps_file",
+        method: "GET",
+        dataType: "text",
+        success: function (text) {
+            console.log("click load_dumps_file file "+ text);
+        },
+        error: function (error) {
+            console.error("Error fetching conversations:", error);
+        },
+    });
 })
 
 $('#stop-start-capture').click(() => {

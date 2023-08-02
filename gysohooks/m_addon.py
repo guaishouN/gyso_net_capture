@@ -119,7 +119,6 @@ class GysoAddon:
             item = CACHE[flow.id]
             item.request = request_info
 
-
     def http_connect(self, flow: http.HTTPFlow):
         """
         HTTPS will come here first; HTTP on requestheaders
@@ -167,11 +166,9 @@ class GysoAddon:
         item = CACHE[uid]
         item.request = request_info
 
-
     def responseheaders(self, flow: http.HTTPFlow):
         print(f'responseheaders {str(flow)}')
         pass
-
 
     def response(self, flow: http.HTTPFlow) -> None:
         print(f'response {str(flow)}')
@@ -203,7 +200,6 @@ class GysoAddon:
             'timestamp_end': flow.response.timestamp_end,
         }
         item.response = response_info
-        print("===============================================================", str(response_info))
 
     def error(self, flow: http.HTTPFlow):
         ensure_cache(flow)

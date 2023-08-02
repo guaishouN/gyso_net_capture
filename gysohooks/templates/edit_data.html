@@ -27,10 +27,9 @@
                     <option value="option 2">http</option>
                 </select>
                 <span class="BtnGroup">
-                    <button id="export-data" class="BtnGroup-item btn " type="button">导出</button>
                     <button id="import-data" class="BtnGroup-item btn" type="button">导入</button>
                     <button id="clear-data" class="BtnGroup-item btn" type="button">清空</button>
-                    <button id="stop-start-capture" class="BtnGroup-item btn btn-danger" type="button">停止记录</button>
+                    <button id="stop-start-capture" class="BtnGroup-item btn btn-danger" type="button">停止拦截</button>
                 </span>
             </p>
             <ul id="capture-list" class="menu" style="background-color: lightgray">
@@ -122,11 +121,11 @@
             <div class="form-group mx-4 mt-4">
                 <div class="form-group-header">
                     <label class="color-fg-success">①修改请求</label>
-                    <button class="btn btn-sm ml-4 btn-outline" type="button">释放</button>
-                    <button class="btn btn-sm btn-danger " type="button" aria-selected="true">锁定</button>
                 </div>
+                <button class="btn btn-sm btn-outline mb-2" type="button">释放</button>
+                <button class="btn btn-sm btn-danger mb-2" type="button" aria-selected="true">锁定</button>
                 <div class="form-group-body">
-                    <textarea id="edit-request-textarea" class="form-control color-bg-open"></textarea>
+                    <textarea id="edit-request-textarea" class="form-control color-bg-open mt-2"></textarea>
                 </div>
             </div>
         </form>
@@ -136,11 +135,17 @@
             <div class="form-group  mx-4  mt-4">
                 <div class="form-group-header">
                     <label class="color-fg-danger">②修改响应</label>
-                    <button class="btn btn-sm ml-4 btn-outline" type="button" >释放</button>
-                    <button class="btn btn-sm btn-danger " type="button" aria-selected="true">锁定</button>
                 </div>
                 <div class="form-group-body">
-                    <textarea id="edit-response-textarea" class="form-control  color-bg-danger"></textarea>
+                    <h5>Header</h5>
+                    <button class="btn btn-sm btn-outline" type="button">释放</button>
+                    <button class="btn btn-sm btn-danger" type="button" aria-selected="true">锁定</button>
+                    <textarea id="edit-response-textarea-header" class="form-control  color-bg-danger mt-2"></textarea>
+
+                    <h5 class="mt-2">Response Body</h5>
+                    <button class="btn btn-sm btn-outline" type="button">释放</button>
+                    <button class="btn btn-sm btn-danger" type="button" aria-selected="true">锁定</button>
+                    <textarea id="edit-response-textarea-body" class="form-control  color-bg-danger mt-2"></textarea>
                 </div>
             </div>
         </form>

@@ -18,7 +18,7 @@ class Capture {
 $(document).ready(function () {
     //baseItem.appendTo('#capture-list').show();
     $('#capture-detail').hide();
-    $('.navtab li').on('click', function() {
+    $('.navtab li').on('click', function () {
         if ($(this).hasClass('selected')) {
             return;
         }
@@ -120,7 +120,7 @@ function parseDetail(captureDetail) {
         'method': request.method,
         'headers': formatJSONToHTML(request.headers),
         'content': request.content,
-        'timestamp': new Date(parseInt(request.timestamp)).toLocaleString().replace(/:\d{1,2}$/,' '),
+        'timestamp': new Date(parseInt(request.timestamp)).toLocaleString().replace(/:\d{1,2}$/, ' '),
     }
     const response_info = {
         'status_code': response.status_code,
@@ -129,11 +129,11 @@ function parseDetail(captureDetail) {
         'time_diff': response.time_diff,
     }
     const detail = $('#capture-detail');
-    detail.find('#capture-request-url').html('<b> '+request_info.method+'</b> <br>'+request_info.url);
+    detail.find('#capture-request-url').html('<b> ' + request_info.method + '</b> <br>' + request_info.url);
     detail.find('#capture-request-header-detail').html(request_info.headers);
     detail.find('#capture-request-body-detail').text(request_info.content);
 
-    detail.find('#capture-response-state').html('<b>'+response_info.status_code+'</b> <br>Time consume:  '+response_info.time_diff+' ms');
+    detail.find('#capture-response-state').html('<b>' + response_info.status_code + '</b> <br>Time consume:  ' + response_info.time_diff + ' ms');
     detail.find('#capture-response-header-detail').html(response_info.headers);
     detail.find('#capture-response-body-detail').text(response_info.content);
 }
@@ -156,13 +156,28 @@ $('#clear-data').click(() => {
     $('#capture-list-blank-tip').show();
 })
 
+
 $('#export-data').click(() => {
-
+    $.ajax({
+        url: "/dumps_file",
+        method: "GET",
+        xhrFields: {
+            responseType: "text"  // 告诉浏览器返回的数据类型为二进制流
+        },
+        success: function (data, status, xhr) {
+            // 创建一个临时的URL来下载文件
+            var blob = new Blob([data], {type: xhr.getResponseHeader("Content-Type")});
+            var link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = "dumps.data";  // 下载的文件名
+            link.click();
+        },
+        error: function (xhr, status, error) {
+            console.error("Error downloading file:",status ,  error);
+        }
+    });
 })
 
-$('#import-data').click(() => {
-
-})
 
 $('#stop-start-capture').click(() => {
 
