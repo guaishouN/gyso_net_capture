@@ -11,7 +11,7 @@
 <body>
 <div class="navtab">
     <ul>
-        <li data-href="/">会话列表</li>
+        <li data-href="/">会话捕捉</li>
         <li class="selected" data-href="/edit">数据纂改</li>
         <li data-href="/settings">设置及使用说明</li>
     </ul>
@@ -33,7 +33,6 @@
                     <button id="stop-start-capture" class="BtnGroup-item btn btn-danger" type="button">停止记录</button>
                 </span>
             </p>
-            <img src="../static/net_path.png" width="90%">
             <ul id="capture-list" class="menu" style="background-color: lightgray">
                 <div id="capture-list-blank-tip" class="blankslate mt-10" style="background-color: lightgray">
                     <h3 class="blankslate-heading">~还没有捕捉到会话数据~</h3>
@@ -46,8 +45,8 @@
         <div class="content_right">
             <nav class="UnderlineNav">
                 <div class="UnderlineNav-body" role="tablist">
-                    <button class="UnderlineNav-item" role="tab" type="button" aria-selected="true">请求&响应</button>
-                    <button class="UnderlineNav-item" role="tab" type="button">更多</button>
+                    <button class="UnderlineNav-item" role="tab" type="button" aria-selected="true">历史请求&响应
+                    </button>
                 </div>
             </nav>
             <div>
@@ -56,7 +55,7 @@
             <div id="capture-detail">
                 <div id="capture-detail-request" class="Box m-2 color-shadow-small color-bg-subtle">
                     <div class="Box-row">
-                        <h5 class="m-0">请求信息 >></h5>
+                        <h5 class="m-0">历史请求信息 >></h5>
                     </div>
                     <div class="Box-row">
                         <p id="capture-request-url" class="mb-0x">
@@ -72,14 +71,15 @@
                     </div>
                     <div id="capture-request-body" class="Box-row">
                         <b>Request body</b> <br>
-                        <p id="capture-request-body-detail">Lorem ipsum dolor sit amet, consectetur \n adipiscing elit. Curabitur consectetur urna nec
+                        <p id="capture-request-body-detail">Lorem ipsum dolor sit amet, consectetur \n adipiscing elit.
+                            Curabitur consectetur urna nec
                             malesuad
                             apharetra.</p>
                     </div>
                 </div>
                 <div id="capture-detail-response" class="Box m-2 color-shadow-small color-bg-subtle">
                     <div class="Box-row">
-                        <h5 class="m-0">响应信息 >></h5>
+                        <h5 class="m-0">历史响应信息 >></h5>
                     </div>
                     <div id="capture-response-state" class="Box-row">
                         <b>200</b> <br>
@@ -94,9 +94,11 @@
                     </div>
                     <div id="capture-response-body" class="Box-row">
                         <b>Response body</b> <br>
-                        <div id="capture-response-body-detail" style="white-space: pre-wrap">Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Curabitur consectetur urna nec
+                        <div id="capture-response-body-detail" style="white-space: pre-wrap">Lorem ipsum dolor sit amet,
+                            consectetur adipiscing elit. Curabitur consectetur urna nec
                             malesuad
-                            apharetra.</div>
+                            apharetra.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -106,13 +108,50 @@
             </div>
         </div>
     </div>
-    <div class="last-section">dfgyh</div>
+    <div class="last-section ">
+        <nav class="UnderlineNav">
+            <div class="UnderlineNav-body" role="tablist">
+                <button class="UnderlineNav-item" role="tab" type="button" aria-selected="true">编辑数据</button>
+            </div>
+        </nav>
+        <img class="ml-4" src="../static/net_path.png" width="90%">
+        <div class="color-fg-danger ml-4 mt-4 h5">篡改目标URL</div>
+
+        <div id="target-url" class="color-bg-closed-emphasis color-fg-on-emphasis p-2 rounded mx-4 mt-1 f4">url</div>
+        <form>
+            <div class="form-group mx-4 mt-4">
+                <div class="form-group-header">
+                    <label class="color-fg-success">①修改请求</label>
+                    <button class="btn btn-sm ml-4 btn-outline" type="button">释放</button>
+                    <button class="btn btn-sm btn-danger " type="button" aria-selected="true">锁定</button>
+                </div>
+                <div class="form-group-body">
+                    <textarea id="edit-request-textarea" class="form-control color-bg-open"></textarea>
+                </div>
+            </div>
+        </form>
+
+
+        <form>
+            <div class="form-group  mx-4  mt-4">
+                <div class="form-group-header">
+                    <label class="color-fg-danger">②修改响应</label>
+                    <button class="btn btn-sm ml-4 btn-outline" type="button" >释放</button>
+                    <button class="btn btn-sm btn-danger " type="button" aria-selected="true">锁定</button>
+                </div>
+                <div class="form-group-body">
+                    <textarea id="edit-response-textarea" class="form-control  color-bg-danger"></textarea>
+                </div>
+            </div>
+        </form>
+
+    </div>
 </div>
 <li id="base-item" class="Truncate d-none">
     <span id="base-item-type" class="Label mr-1 Label--accent">get</span>
     <span id="base-item-url" class="Truncate-text Truncate-text--expandable">http://10.219.8.4/wiki/index.php/Toyota_23MM_Mid_AVN#.E8.BD.AF.E4.BB.B6.E5.8C.85.E8.B7.AF.E5.BE.84</span>
 </li>
 </body>
-<script src="{{ url_for('static', filename='data.js') }}"></script>
+<script src="{{ url_for('static', filename='edit_data.js') }}"></script>
 </html>
 

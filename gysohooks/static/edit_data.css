@@ -40,12 +40,12 @@ body{}
 }
 
 .right-section {
-    flex:1;
+    flex:30%;
     overflow: auto;
 }
 
 .last-section {
-    width: 40%;
+    width: 50%;
     overflow: auto;
 }
 

@@ -193,16 +193,17 @@ class GysoAddon:
             'uuid': uid,
             'url': flow.request.url,
             'status_code': flow.response.status_code,
+            'http_version': flow.response.http_version,
+            'reason': flow.response.reason,
             'headers': dict(flow.response.headers),
             'content': content,
             'timestamp': str(response_time),
             'time_diff': str(time_diff),
-            'http_version': flow.response.http_version,
             'timestamp_start': flow.response.timestamp_start,
             'timestamp_end': flow.response.timestamp_end,
-            'reason': flow.response.reason,
         }
         item.response = response_info
+        print("===============================================================", str(response_info))
 
     def error(self, flow: http.HTTPFlow):
         ensure_cache(flow)
