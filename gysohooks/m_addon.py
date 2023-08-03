@@ -2,12 +2,22 @@ import json
 from mitmproxy import ctx, http, dns
 
 CACHE = {}
+FLOW_CACHE = set()
+
 
 def get_capture_item(uid: str):
     if uid in CACHE:
         return CACHE[uid]
     else:
         return None
+
+
+def get_current_capture_list():
+    snap_list = []
+    for flow in FLOW_CACHE:
+        s = SnapInfo(flow.id, flow.request.method, flow.request.pretty_url)
+        snap_list.append(s.to_dict())
+    return json.dumps(snap_list)
 
 
 def get_capture_item_as_json(uid: str):
@@ -79,6 +89,7 @@ class CaptureItem:
 
 def ensure_cache(flow: http.HTTPFlow):
     uid = flow.id
+    FLOW_CACHE.add(flow)
     if uid not in CACHE:
         item: CaptureItem = CaptureItem(uid)
         CACHE[uid] = item

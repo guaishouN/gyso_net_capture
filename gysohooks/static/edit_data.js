@@ -1,9 +1,5 @@
 const baseItem = $('#base-item').clone().removeAttr('id').removeClass('d-none');
 const cache = {};
-const socketHostname = window.location.hostname;
-const socketPort = 5000;
-const socket = io.connect(`http://${socketHostname}:${socketPort}`);
-
 let current_uid = ''
 
 class Capture {
@@ -27,27 +23,23 @@ $(document).ready(function () {
             window.location.href = url;
         }
     });
-});
 
-socket.on('connect', function () {
-    console.log('Connected to server');
-});
+    $.ajax({
+        url: "/get_edit_list",
+        method: "GET",
+        dataType: "json",
+        success: function (jsonList) {
+            console.log(jsonList)
+            for (let i = 0; i < jsonList.length; i++) {
+                let snap = jsonList[i];
+                snapInfo(snap);
+            }
+        },
+        error: function (error) {
+            console.error("Error fetching conversations:", error);
+        },
 
-socket.on('response', function (data) {
-    let capture = JSON.parse(data);
-    switch (capture.type) {
-        case 'snap':
-            snapInfo(capture);
-            break;
-        case 'request':
-            requestInfo(capture);
-            break;
-        case 'response':
-            responseInfo(capture);
-            break;
-        default:
-            console.log("none type");
-    }
+    });
 });
 
 
@@ -65,7 +57,7 @@ function snapInfo(snap) {
         current_uid = $(netItem).attr("id");
         $('#capture-list').children().removeClass('selected');
         $(netItem).addClass('selected');
-        console.log("after ",$(netItem).attr("id"))
+        console.log("after ", $(netItem).attr("id"))
         getCaptureDetail(snap.uid);
     });
     cache[snap.uid] = new Capture(snap.uid, snap, null, null);
@@ -73,7 +65,7 @@ function snapInfo(snap) {
         current_uid = snap.uid;
         setTimeout(function () {
             getCaptureDetail(current_uid);
-        }, 1000);
+        }, 10);
     }
 }
 
@@ -81,7 +73,7 @@ function getCaptureDetail(uid) {
     let capture = cache[uid];
     if (capture.request != null) {
         console.log(capture);
-        parseDetail(capture);
+        parseEditDetail(capture);
         return;
     }
     $('#capture-detail').show();
@@ -92,7 +84,7 @@ function getCaptureDetail(uid) {
         dataType: "json",
         success: function (captureDetail) {
             console.log(captureDetail);
-            parseDetail(captureDetail);
+            parseEditDetail(captureDetail);
             parseDetailToEdit(captureDetail)
         },
         error: function (error) {
@@ -114,7 +106,7 @@ function formatJSONToHTML(obj, indent = 0) {
     return output;
 }
 
-function parseDetail(captureDetail) {
+function parseEditDetail(captureDetail) {
     const code = captureDetail.code;
     const request = captureDetail.request;
     const response = captureDetail.response;
@@ -166,18 +158,6 @@ function resetEditRequestInfo(request_info) {
     $('#edit-request-textarea').text(formattedRequest);
 }
 
-function isJson(dataStr) {
-    if (typeof dataStr === 'string') {
-        try {
-            const obj = JSON.parse(dataStr);
-            return !!(typeof obj === 'object' && obj);
-        } catch (e) {
-            return false;
-        }
-    }
-    return false;
-}
-
 function resetEditResponseInfo(response_info) {
     if (response_info === '') {
         return ''
@@ -212,21 +192,23 @@ function parseDetailToEdit(captureDetail) {
     $('#target-url').text(`${request_info.url}`);
 }
 
-function requestInfo(request) {
-    let captureCache = cache[request.uid];
-    captureCache.request = request;
-    console.log("requestInfo:", captureCache)
-}
-
-function responseInfo(response) {
-    let captureCache = cache[response.uid];
-    captureCache.response = response;
-    console.log("responseInfo:", captureCache)
-}
-
 $('#clear-data').click(() => {
     $('#capture-list').find('li').remove();
     $('#capture-list-blank-tip').show();
+    // 发起AJAX请求上传文件
+    $.ajax({
+        url: "/clear/edit",
+        method: "GET",
+        dataType: 'text',
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            console.log(data)
+        },
+        error: function (xhr, status, error) {
+            console.error("Error clear:", error);
+        }
+    });
 })
 
 $('#import-data').click(() => {
@@ -250,15 +232,20 @@ $('#import-data').click(() => {
         contentType: false,
         success: function (data) {
             console.log(data)
+            $('#capture-list').find('li').remove();
             $.ajax({
                 url: "/get_edit_list",
                 method: "GET",
                 dataType: "json",
                 success: function (jsonList) {
                     console.log(jsonList)
-                    for (let i = 0; i < jsonList.length; i++) {
-                        let snap = jsonList[i];
-                        snapInfo(snap);
+                    if (jsonList.length === 0) {
+                        $('#capture-list-blank-tip').show();
+                    } else {
+                        for (let i = 0; i < jsonList.length; i++) {
+                            let snap = jsonList[i];
+                            snapInfo(snap);
+                        }
                     }
                 },
                 error: function (error) {

@@ -17,7 +17,8 @@ Read a mitmproxy dump file.
 
 FLOW_CACHE = set[http.HTTPFlow]()
 folder_path = "./data"
-path = folder_path+"/dumps.data"
+dumps_file_name = folder_path + "/dumps.data"
+history_file_name = folder_path + "/history.data"
 
 
 def checkout_data_dir():
@@ -26,8 +27,8 @@ def checkout_data_dir():
         os.makedirs(folder_path)
 
     # 创建文件
-    if not os.path.exists(path):
-        with open(path, "w+") as f:
+    if not os.path.exists(dumps_file_name):
+        with open(dumps_file_name, "w+") as f:
             # 可以在这里写入文件内容，如果需要的话
             pass
 
@@ -37,7 +38,7 @@ checkout_data_dir()
 
 class GysoHooksIO:
     def __init__(self) -> None:
-        self.f: BinaryIO = open(path, "wb")
+        self.f: BinaryIO = open(dumps_file_name, "wb")
         self.w = io.FlowWriter(self.f)
 
     def response(self, flow: http.HTTPFlow) -> None:
@@ -49,8 +50,9 @@ class GysoHooksIO:
         for flow in FLOW_CACHE:
             self.w.add(flow)
 
-    def load_file(self):
-        with open(path, "rb") as logfile:
+    def load_history_file(self):
+        FLOW_CACHE.clear()
+        with open(history_file_name, "rb") as logfile:
             freader = io.FlowReader(logfile)
             # pp = pprint.PrettyPrinter(indent=4)
             try:

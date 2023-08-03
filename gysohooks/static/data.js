@@ -27,6 +27,22 @@ $(document).ready(function () {
             window.location.href = url;
         }
     });
+    $.ajax({
+        url: "/get_current_list",
+        method: "GET",
+        dataType: "json",
+        success: function (jsonList) {
+            console.log(jsonList)
+            for (let i = 0; i < jsonList.length; i++) {
+                let snap = jsonList[i];
+                snapInfo(snap);
+            }
+        },
+        error: function (error) {
+            console.error("Error fetching conversations:", error);
+        },
+
+    });
 });
 
 socket.on('connect', function () {
@@ -173,7 +189,7 @@ $('#export-data').click(() => {
             link.click();
         },
         error: function (xhr, status, error) {
-            console.error("Error downloading file:",status ,  error);
+            console.error("Error downloading file:", status, error);
         }
     });
 })

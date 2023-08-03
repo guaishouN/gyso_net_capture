@@ -10,7 +10,7 @@ from mitmproxy.tools.dump import DumpMaster
 from flask import Flask, render_template, request, send_file, jsonify
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
-from m_addon import GysoAddon, get_capture_item_as_json, SnapInfo
+from m_addon import GysoAddon, get_capture_item_as_json, SnapInfo, get_current_capture_list
 from io_addon import GysoHooksIO, FLOW_CACHE
 
 app = Flask(__name__)
@@ -48,7 +48,7 @@ def capture_detail(uid):
 def save_dumps_file():
     if gysoio_addon is not None:
         gysoio_addon.dumps_as_to_file()
-    return send_file(io_addon.path, mimetype='text/plain', as_attachment=True)
+    return send_file(io_addon.dumps_file_name, mimetype='text/plain', as_attachment=True)
 
 
 @app.route("/upload_history_file", methods=["POST"])
@@ -61,14 +61,14 @@ def load_dumps_file():
         return "No selected file", 400
 
     # 保存上传的文件到指定路径
-    file.save(io_addon.path)
+    file.save(io_addon.history_file_name)
     return "File uploaded successfully", 200
 
 
 @app.route("/get_edit_list", methods=["GET"])
 def get_edit_list():
     if gysoio_addon is not None:
-        gysoio_addon.load_file()
+        gysoio_addon.load_history_file()
 
     snap_list = []
     ab = GysoAddon()
@@ -77,6 +77,12 @@ def get_edit_list():
         m_addon.add_cache(ab, flow)
         snap_list.append(s.to_dict())
     return json.dumps(snap_list)
+
+
+@app.route("/get_current_list", methods=["GET"])
+def get_current_list():
+    return get_current_capture_list()
+
 
 @socketio.on('connect')
 def handle_connect():
