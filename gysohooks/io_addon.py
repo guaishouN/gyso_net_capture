@@ -37,6 +37,7 @@ checkout_data_dir()
 
 
 class GysoHooksIO:
+    url_set = set[str]()
     def __init__(self) -> None:
         self.f: BinaryIO = open(dumps_file_name, "wb")
         self.w = io.FlowWriter(self.f)
@@ -52,14 +53,17 @@ class GysoHooksIO:
 
     def load_history_file(self):
         FLOW_CACHE.clear()
+        self.url_set.clear()
         with open(history_file_name, "rb") as logfile:
             freader = io.FlowReader(logfile)
             # pp = pprint.PrettyPrinter(indent=4)
             try:
                 for f in freader.stream():
                     if isinstance(f, http.HTTPFlow):
-                        FLOW_CACHE.add(f)
-                        print(f'loaded ---- {f.id} : {f.request.host}')
+                        if f.request.pretty_url not in self.url_set:
+                            FLOW_CACHE.add(f)
+                            self.url_set.add(f.request.pretty_url)
+                            print(f'loaded ---- {f.id} : {f.request.host}')
                     # pp.pprint(f.get_state())
 
             except FlowReadException as e:

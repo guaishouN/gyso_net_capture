@@ -25,7 +25,7 @@
                 <span class="BtnGroup">
                     <button id="import-data" class="BtnGroup-item btn" type="button">导入历史数据</button>
                     <button id="clear-data" class="BtnGroup-item btn" type="button">清空</button>
-                    <button id="stop-start-capture" class="BtnGroup-item btn btn-danger" type="button">应用修改</button>
+                    <button id="stop-start-apply" class="BtnGroup-item btn" type="button" aria-selected="false">应用篡改</button>
                 </span>
             </p>
             <ul id="capture-list" class="menu" style="background-color: lightgray">
@@ -109,17 +109,16 @@
                 <button class="UnderlineNav-item" role="tab" type="button" aria-selected="true">编辑数据</button>
             </div>
         </nav>
-        <img class="ml-4" src="../static/net_path.png" width="90%">
-        <div class="color-fg-danger ml-4 mt-4 h5">篡改目标URL</div>
+        <img class="ml-4 " src="../static/net_path.png" width="90%" alt="x">
+        <div class="color-fg-accent ml-4 mt-4 h5 border-top">篡改目标URL</div>
 
-        <div id="target-url" class="color-bg-closed-emphasis color-fg-on-emphasis p-2 rounded mx-4 mt-1 f4">url</div>
-        <form>
-            <div class="form-group mx-4 mt-4">
+        <div id="target-url" class="color-bg-accent-emphasis color-fg-on-emphasis p-2 rounded mx-4 mt-1 f4">url</div>
+        <form >
+            <div class="form-group mx-4 mt-4 border-top">
                 <div class="form-group-header">
                     <label class="color-fg-success">①修改请求</label>
                 </div>
-                <button class="btn btn-sm btn-outline mb-2" type="button">释放</button>
-                <button class="btn btn-sm btn-danger mb-2" type="button" aria-selected="true">锁定</button>
+                <button id="modify-request" class="btn btn-sm mb-2" type="button" aria-selected="false">应用修改</button>
                 <div class="form-group-body">
                     <textarea id="edit-request-textarea" class="form-control color-bg-open mt-2"></textarea>
                 </div>
@@ -128,19 +127,17 @@
 
 
         <form>
-            <div class="form-group  mx-4  mt-4">
+            <div class="form-group  mx-4  mt-4 border-top">
                 <div class="form-group-header">
                     <label class="color-fg-danger">②修改响应</label>
                 </div>
                 <div class="form-group-body">
                     <h5>Header</h5>
-                    <button class="btn btn-sm btn-outline" type="button">释放</button>
-                    <button class="btn btn-sm btn-danger" type="button" aria-selected="true">锁定</button>
+                    <button id="modify-response-header"  class="btn btn-sm" type="button" aria-selected="false">应用修改</button>
                     <textarea id="edit-response-textarea-header" class="form-control  color-bg-danger mt-2"></textarea>
 
                     <h5 class="mt-2">Response Body</h5>
-                    <button class="btn btn-sm btn-outline" type="button">释放</button>
-                    <button class="btn btn-sm btn-danger" type="button" aria-selected="true">锁定</button>
+                    <button id="modify-response-body" class="btn btn-sm" type="button" aria-selected="false">应用修改</button>
                     <textarea id="edit-response-textarea-body" class="form-control  color-bg-danger mt-2"></textarea>
                 </div>
             </div>

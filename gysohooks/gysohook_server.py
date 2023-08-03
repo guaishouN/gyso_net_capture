@@ -10,7 +10,7 @@ from mitmproxy.tools.dump import DumpMaster
 from flask import Flask, render_template, request, send_file, jsonify
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
-from m_addon import GysoAddon, get_capture_item_as_json, SnapInfo, get_current_capture_list
+from m_addon import GysoAddon, get_capture_item_as_json, SnapInfo, get_current_capture_list, update_modify, ModifyCache
 from io_addon import GysoHooksIO, FLOW_CACHE
 
 app = Flask(__name__)
@@ -82,6 +82,28 @@ def get_edit_list():
 @app.route("/get_current_list", methods=["GET"])
 def get_current_list():
     return get_current_capture_list()
+
+
+@app.route("/apply_modify/<modify_type>", methods=["GET"])
+def set_apply_modify(modify_type: str):
+    print(f'apply_modify {modify_type}')
+    if modify_type == 'true':
+        m_addon.apply_modify = True
+    else:
+        m_addon.apply_modify = False
+    return 'done'
+
+
+@app.route("/set_modify_data", methods=["POST"])
+def set_modify_data():
+    data = request.form
+    modify_data = ModifyCache()
+    modify_data.url = data["url"]
+    modify_data.requests_data = data["requestTextarea"]
+    modify_data.response_header = data["responseHeaderTextarea"]
+    modify_data.response_body = data["responseBodyTextarea"]
+    update_modify(modify_data)
+    return 'set_modify_data done!'
 
 
 @socketio.on('connect')

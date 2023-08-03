@@ -2,7 +2,20 @@ import json
 from mitmproxy import ctx, http, dns
 
 CACHE = {}
-FLOW_CACHE = set()
+FLOW_CACHE = {}
+apply_modify = False
+MODIFY_CACHE = {}
+
+
+class ModifyCache:
+    url: str = ...
+    requests_data: str = ...
+    response_header: str = ...
+    response_body: str = ...
+
+
+def update_modify(modify_data: ModifyCache):
+    MODIFY_CACHE[modify_data.url] = modify_data
 
 
 def get_capture_item(uid: str):
@@ -14,7 +27,8 @@ def get_capture_item(uid: str):
 
 def get_current_capture_list():
     snap_list = []
-    for flow in FLOW_CACHE:
+    for uid in FLOW_CACHE:
+        flow = FLOW_CACHE[uid]
         s = SnapInfo(flow.id, flow.request.method, flow.request.pretty_url)
         snap_list.append(s.to_dict())
     return json.dumps(snap_list)
@@ -89,7 +103,7 @@ class CaptureItem:
 
 def ensure_cache(flow: http.HTTPFlow):
     uid = flow.id
-    FLOW_CACHE.add(flow)
+    FLOW_CACHE[uid] = flow
     if uid not in CACHE:
         item: CaptureItem = CaptureItem(uid)
         CACHE[uid] = item
@@ -188,6 +202,13 @@ class GysoAddon:
         request_time = flow.request.timestamp_start
         response_time = flow.response.timestamp_end
         time_diff = response_time - request_time
+        print(f"apply_modify[{apply_modify}] url[{flow.request.pretty_url}] catch [{(flow.request.pretty_url in MODIFY_CACHE)}]")
+        if apply_modify and flow.request.pretty_url in MODIFY_CACHE:
+            m_cache: ModifyCache = MODIFY_CACHE[flow.request.pretty_url]
+            if m_cache.response_body is not None and m_cache.response_body != '':
+                flow.response.content = m_cache.response_body
+            pass
+
         uid = flow.id
         ensure_cache(flow)
         item = CACHE[uid]

@@ -53,7 +53,7 @@ function snapInfo(snap) {
     netItem.appendTo('#capture-list').show();
     console.log("before uid ", $(netItem).attr("id"), snap.uid)
     console.log("before url ", snap.pretty_url)
-    netItem.click(() => {
+    netItem.on('click', () => {
         current_uid = $(netItem).attr("id");
         $('#capture-list').children().removeClass('selected');
         $(netItem).addClass('selected');
@@ -107,7 +107,6 @@ function formatJSONToHTML(obj, indent = 0) {
 }
 
 function parseEditDetail(captureDetail) {
-    const code = captureDetail.code;
     const request = captureDetail.request;
     const response = captureDetail.response;
     const request_info = {
@@ -192,7 +191,7 @@ function parseDetailToEdit(captureDetail) {
     $('#target-url').text(`${request_info.url}`);
 }
 
-$('#clear-data').click(() => {
+$('#clear-data').on('click', () => {
     $('#capture-list').find('li').remove();
     $('#capture-list-blank-tip').show();
     // 发起AJAX请求上传文件
@@ -211,7 +210,7 @@ $('#clear-data').click(() => {
     });
 })
 
-$('#import-data').click(() => {
+$('#import-data').on('click', () => {
     const fileInput = $("#history-file-input")[0];
     const file = fileInput.files[0];
 
@@ -220,7 +219,7 @@ $('#import-data').click(() => {
         return;
     }
 
-    var formData = new FormData();
+    const formData = new FormData();
     formData.append("file", file);
 
     // 发起AJAX请求上传文件
@@ -260,11 +259,90 @@ $('#import-data').click(() => {
     });
 })
 
-$('#stop-start-capture').click(() => {
-
+$('#stop-start-apply').on('click', () => {
+    const bt = $('#stop-start-apply');
+    const isSelected = bt.attr('aria-selected');
+    console.log(isSelected)
+    bt.attr('aria-selected', isSelected === 'true' ? 'false' : 'true');
+    if (isSelected === 'true') {
+        bt.removeClass('btn-danger');
+    } else {
+        bt.addClass('btn-danger');
+    }
+    $.ajax({
+        url: "/apply_modify/" + isSelected,
+        method: "GET",
+        dataType: "text",
+        success: function (result) {
+            console.log(result)
+        },
+        error: function (error) {
+            console.error("apply_modify error:", error);
+        },
+    });
 })
 
-function sendMessage() {
-    let message = document.getElementById('message').value;
-    socket.emit('message', message);
+const modifyRequestBt = $('#modify-request');
+modifyRequestBt.on('click', () => {
+    const isSelected = modifyRequestBt.attr('aria-selected');
+    console.log(isSelected)
+    modifyRequestBt.attr('aria-selected', isSelected === 'true' ? 'false' : 'true');
+    if (isSelected === 'true') {
+        modifyRequestBt.removeClass('btn-danger');
+    } else {
+        modifyRequestBt.addClass('btn-danger');
+    }
+    setModifyData();
+});
+
+
+const modifyResponseHeaderBt = $('#modify-response-header');
+modifyResponseHeaderBt.on('click', () => {
+    const isSelected = modifyResponseHeaderBt.attr('aria-selected');
+    console.log(isSelected)
+    modifyResponseHeaderBt.attr('aria-selected', isSelected === 'true' ? 'false' : 'true');
+    if (isSelected === 'true') {
+        modifyResponseHeaderBt.removeClass('btn-danger');
+    } else {
+        modifyResponseHeaderBt.addClass('btn-danger');
+    }
+    setModifyData();
+});
+
+const modifyResponseBodyBt = $('#modify-response-body');
+modifyResponseBodyBt.on('click', () => {
+    const isSelected = modifyResponseBodyBt.attr('aria-selected');
+    console.log(isSelected)
+    modifyResponseBodyBt.attr('aria-selected', isSelected === 'true' ? 'false' : 'true');
+    if (isSelected === 'true') {
+        modifyResponseBodyBt.removeClass('btn-danger');
+    } else {
+        modifyResponseBodyBt.addClass('btn-danger');
+    }
+    setModifyData();
+});
+
+function setModifyData() {
+    const isRequestSelected = modifyRequestBt.attr('aria-selected');
+    const isResponseHeaderSelected = modifyResponseHeaderBt.attr('aria-selected');
+    const isResponseBodySelected = modifyResponseBodyBt.attr('aria-selected');
+
+    const data = {
+        url:$('#target-url').text(),
+        requestTextarea: isRequestSelected==='true'?$("#edit-request-textarea").val():'',
+        responseHeaderTextarea: isResponseHeaderSelected==='true'?$("#edit-response-textarea-header").val():'',
+        responseBodyTextarea: isResponseBodySelected==='true'?$("#edit-response-textarea-body").val():''
+    };
+
+    $.ajax({
+        url: "/set_modify_data",  // Flask 服务器端路由
+        method: "POST",
+        data: data,
+        success: function (response) {
+            console.log("Data sent successfully.");
+        },
+        error: function (xhr, status, error) {
+            console.error("Error sending data:", error);
+        }
+    });
 }
