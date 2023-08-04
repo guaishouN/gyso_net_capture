@@ -3,7 +3,6 @@ from mitmproxy import ctx, http, dns
 
 CACHE = {}
 FLOW_CACHE = {}
-apply_modify = False
 MODIFY_CACHE = {}
 
 
@@ -13,9 +12,18 @@ class ModifyCache:
     response_header: str = ...
     response_body: str = ...
 
+    def __str__(self) -> str:
+        return str({
+            "url": self.url,
+            "requests_data": self.requests_data,
+            "response_header": self.response_header,
+            "response_body": self.response_body
+        })
+
 
 def update_modify(modify_data: ModifyCache):
     MODIFY_CACHE[modify_data.url] = modify_data
+    print(str(modify_data))
 
 
 def get_capture_item(uid: str):
@@ -109,10 +117,11 @@ def ensure_cache(flow: http.HTTPFlow):
         CACHE[uid] = item
 
 
-class GysoAddon:
+class GysoProcessAddon:
     """
        Http and Https 拦截
     """
+    apply_modify = False
 
     def __init__(self, app_s=None, queue_s=None):
         self.app = app_s
@@ -150,22 +159,23 @@ class GysoAddon:
         """
         HTTPS will come here first; HTTP on requestheaders
         """
-        print(f'http_connect {str(flow)}')
+        # print(f'http_connect {str(flow)}')
         self.check_emit_flow(flow)
 
     def http_connect_upstream(self, flow: http.HTTPFlow):
-        print(f'http_connect_upstream {str(flow)}')
+        # print(f'http_connect_upstream {str(flow)}')
+        pass
 
     def requestheaders(self, flow: http.HTTPFlow):
         """
         HTTP will come here first
         """
-        print(f'requestheaders {str(flow)}')
+        # print(f'requestheaders {str(flow)}')
         self.check_emit_flow(flow)
         pass
 
     def request(self, flow: http.HTTPFlow):
-        print(f'request {str(flow)}')
+        # print(f'request {str(flow)}')
         uid = flow.id
         try:
             content = flow.request.content.decode('utf-8', 'ignore')
@@ -194,19 +204,20 @@ class GysoAddon:
         item.request = request_info
 
     def responseheaders(self, flow: http.HTTPFlow):
-        print(f'responseheaders {str(flow)}')
+        # print(f'responseheaders {str(flow)}')
         pass
 
     def response(self, flow: http.HTTPFlow) -> None:
-        print(f'response {str(flow)}')
+        # print(f'response {str(flow)}')
         request_time = flow.request.timestamp_start
         response_time = flow.response.timestamp_end
         time_diff = response_time - request_time
-        print(f"apply_modify[{apply_modify}] url[{flow.request.pretty_url}] catch [{(flow.request.pretty_url in MODIFY_CACHE)}]")
-        if apply_modify and flow.request.pretty_url in MODIFY_CACHE:
+        print(f"apply_modify[{self.apply_modify}] url[{flow.request.pretty_url}]",
+              f" catch [{(flow.request.pretty_url in MODIFY_CACHE)}]")
+        if self.apply_modify and flow.request.pretty_url in MODIFY_CACHE:
             m_cache: ModifyCache = MODIFY_CACHE[flow.request.pretty_url]
             if m_cache.response_body is not None and m_cache.response_body != '':
-                flow.response.content = m_cache.response_body
+                flow.response.content = m_cache.response_body.encode('utf-8')
             pass
 
         uid = flow.id
@@ -240,8 +251,10 @@ class GysoAddon:
         item: CaptureItem = CACHE[flow.id]
         request_time = flow.request.timestamp_start
         time_diff = request_time
+        content = ''
         try:
-            content = flow.response.content.decode()
+            if flow.response is not None:
+                content = flow.response.content.decode()
         except UnicodeDecodeError:
             content = "[(⊙o⊙)…， 这个数据抓包工具不能解析, 而不是没有response Body数据]"
             print("Failed request decoded!! UnicodeDecodeError")
@@ -265,7 +278,7 @@ class GysoAddon:
         pass
 
 
-def add_cache(gyso_addon: GysoAddon, flow: http.HTTPFlow):
+def add_cache(gyso_addon: GysoProcessAddon, flow: http.HTTPFlow):
     ensure_cache(flow)
     if gyso_addon is not None:
         gyso_addon.request(flow)

@@ -270,7 +270,7 @@ $('#stop-start-apply').on('click', () => {
         bt.addClass('btn-danger');
     }
     $.ajax({
-        url: "/apply_modify/" + isSelected,
+        url: "/apply_modify/" + bt.attr('aria-selected'),
         method: "GET",
         dataType: "text",
         success: function (result) {

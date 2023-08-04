@@ -43,7 +43,7 @@ class GysoHooksIO:
         self.w = io.FlowWriter(self.f)
 
     def response(self, flow: http.HTTPFlow) -> None:
-        print(str(flow))
+        # print(str(flow))
         FLOW_CACHE.add(flow)
 
 

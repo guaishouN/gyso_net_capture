@@ -10,7 +10,7 @@ from mitmproxy.tools.dump import DumpMaster
 from flask import Flask, render_template, request, send_file, jsonify
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
-from m_addon import GysoAddon, get_capture_item_as_json, SnapInfo, get_current_capture_list, update_modify, ModifyCache
+from m_addon import GysoProcessAddon, get_capture_item_as_json, SnapInfo, get_current_capture_list, update_modify, ModifyCache
 from io_addon import GysoHooksIO, FLOW_CACHE
 
 app = Flask(__name__)
@@ -18,7 +18,8 @@ queue_m = queue.Queue()
 exit_event = asyncio.Event()
 socketio = SocketIO(app, cors_allowed_origins="*")
 cors = CORS(app)
-gysoio_addon: GysoHooksIO = ...
+gyso_io_addon: GysoHooksIO = ...
+process_addon: GysoProcessAddon = ...
 
 
 @app.route("/", methods=("GET", "POST"))
@@ -46,8 +47,8 @@ def capture_detail(uid):
 
 @app.route("/dumps_file")
 def save_dumps_file():
-    if gysoio_addon is not None:
-        gysoio_addon.dumps_as_to_file()
+    if gyso_io_addon is not None:
+        gyso_io_addon.dumps_as_to_file()
     return send_file(io_addon.dumps_file_name, mimetype='text/plain', as_attachment=True)
 
 
@@ -67,11 +68,11 @@ def load_dumps_file():
 
 @app.route("/get_edit_list", methods=["GET"])
 def get_edit_list():
-    if gysoio_addon is not None:
-        gysoio_addon.load_history_file()
+    if gyso_io_addon is not None:
+        gyso_io_addon.load_history_file()
 
     snap_list = []
-    ab = GysoAddon()
+    ab = GysoProcessAddon()
     for flow in FLOW_CACHE:
         s = SnapInfo(flow.id, flow.request.method, flow.request.pretty_url)
         m_addon.add_cache(ab, flow)
@@ -87,11 +88,9 @@ def get_current_list():
 @app.route("/apply_modify/<modify_type>", methods=["GET"])
 def set_apply_modify(modify_type: str):
     print(f'apply_modify {modify_type}')
-    if modify_type == 'true':
-        m_addon.apply_modify = True
-    else:
-        m_addon.apply_modify = False
-    return 'done'
+    if process_addon is not None:
+        process_addon.apply_modify = (modify_type == 'true')
+    return f'apply_modify set [{process_addon.apply_modify}]'
 
 
 @app.route("/set_modify_data", methods=["POST"])
@@ -134,12 +133,12 @@ async def run_mitmdump():
     mitm_master = DumpMaster(mitm_options)
 
     # 创建 Addon 实例并传递队列
-    addon = GysoAddon(app, queue_m)
-    global gysoio_addon
-    gysoio_addon = GysoHooksIO()
+    global gyso_io_addon, process_addon
+    process_addon = GysoProcessAddon(app, queue_m)
+    gyso_io_addon = GysoHooksIO()
 
-    mitm_master.addons.add(addon)
-    mitm_master.addons.add(gysoio_addon)
+    mitm_master.addons.add(process_addon)
+    mitm_master.addons.add(gyso_io_addon)
 
     # 启动 mitmproxy
     await mitm_master.run()
