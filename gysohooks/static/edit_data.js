@@ -25,7 +25,7 @@ $(document).ready(function () {
     });
 
     $.ajax({
-        url: "/get_edit_list",
+        url: "/get_history_list",
         method: "GET",
         dataType: "json",
         success: function (jsonList) {
@@ -79,7 +79,7 @@ function getCaptureDetail(uid) {
     $('#capture-detail').show();
     $("#capture-detail-blank").hide();
     $.ajax({
-        url: "/captureDetail/" + uid,
+        url: "/history_detail/" + uid,
         method: "GET",
         dataType: "json",
         success: function (captureDetail) {
@@ -233,7 +233,7 @@ $('#import-data').on('click', () => {
             console.log(data)
             $('#capture-list').find('li').remove();
             $.ajax({
-                url: "/get_edit_list",
+                url: "/get_history_list",
                 method: "GET",
                 dataType: "json",
                 success: function (jsonList) {

@@ -1,24 +1,22 @@
 import asyncio
-import json
 import queue
 from concurrent.futures import ThreadPoolExecutor
-
 import mitmproxy
-from gysohooks import io_addon, m_addon
 from mitmproxy import options, ctx
 from mitmproxy.tools.dump import DumpMaster
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
-from m_addon import GysoProcessAddon, get_capture_item_as_json, SnapInfo, get_current_capture_list, update_modify, ModifyCache
-from io_addon import GysoHooksIO, FLOW_CACHE
+from current_addon import GysoProcessAddon, get_capture_item_as_json, get_current_capture_list, update_modify, ModifyCache
+from history_addon import get_history_detail_as_json, save_upload_file, get_history_list
+from dumps_addon import GysoHooksDumpsAddOn, dumps_file_name
 
 app = Flask(__name__)
 queue_m = queue.Queue()
 exit_event = asyncio.Event()
 socketio = SocketIO(app, cors_allowed_origins="*")
 cors = CORS(app)
-gyso_io_addon: GysoHooksIO = ...
+gyso_io_addon: GysoHooksDumpsAddOn = ...
 process_addon: GysoProcessAddon = ...
 
 
@@ -45,39 +43,33 @@ def capture_detail(uid):
     return get_capture_item_as_json(uid)
 
 
+@app.route("/history_detail/<uid>", methods=['GET'])
+def history_detail(uid):
+    return get_history_detail_as_json(uid)
+
+
 @app.route("/dumps_file")
 def save_dumps_file():
     if gyso_io_addon is not None:
-        gyso_io_addon.dumps_as_to_file()
-    return send_file(io_addon.dumps_file_name, mimetype='text/plain', as_attachment=True)
+        gyso_io_addon.dumps_as_file_to_client()
+    return send_file(dumps_file_name, mimetype='text/plain', as_attachment=True)
 
 
 @app.route("/upload_history_file", methods=["POST"])
-def load_dumps_file():
+def upload_history_file():
     if "file" not in request.files:
         return "No file part", 400
 
     file = request.files["file"]
     if file.filename == "":
         return "No selected file", 400
-
-    # 保存上传的文件到指定路径
-    file.save(io_addon.history_file_name)
+    save_upload_file(file)
     return "File uploaded successfully", 200
 
 
-@app.route("/get_edit_list", methods=["GET"])
-def get_edit_list():
-    if gyso_io_addon is not None:
-        gyso_io_addon.load_history_file()
-
-    snap_list = []
-    ab = GysoProcessAddon()
-    for flow in FLOW_CACHE:
-        s = SnapInfo(flow.id, flow.request.method, flow.request.pretty_url)
-        m_addon.add_cache(ab, flow)
-        snap_list.append(s.to_dict())
-    return json.dumps(snap_list)
+@app.route("/get_history_list", methods=["GET"])
+def get_history_dumps_list():
+    return get_history_list()
 
 
 @app.route("/get_current_list", methods=["GET"])
@@ -135,7 +127,7 @@ async def run_mitmdump():
     # 创建 Addon 实例并传递队列
     global gyso_io_addon, process_addon
     process_addon = GysoProcessAddon(app, queue_m)
-    gyso_io_addon = GysoHooksIO()
+    gyso_io_addon = GysoHooksDumpsAddOn()
 
     mitm_master.addons.add(process_addon)
     mitm_master.addons.add(gyso_io_addon)
