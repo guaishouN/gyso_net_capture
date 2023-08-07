@@ -8,7 +8,7 @@ from flask import Flask, render_template, request, send_file
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
 from current_addon import GysoHookAddon, get_capture_item_as_json, get_current_capture_list
-from modify_addon import update_modify, ModifyCache, GysoModifyAddon
+from modify_addon import update_modify, ModifyCache, GysoModifyAddon, get_modify_detail
 from history_addon import get_history_detail_as_json, save_upload_file, get_history_list
 from dumps_addon import GysoHooksDumpsAddOn, dumps_file_name
 
@@ -92,11 +92,17 @@ def set_modify_data():
     data = request.form
     modify_data = ModifyCache()
     modify_data.url = data["url"]
+    modify_data.uid = data["uid"]
     modify_data.requests_data = data["requestTextarea"]
     modify_data.response_header = data["responseHeaderTextarea"]
     modify_data.response_body = data["responseBodyTextarea"]
     update_modify(modify_data)
     return 'set_modify_data done!'
+
+
+@app.route("/get_modify_data/<uid>", methods=["GET"])
+def get_modify_data(uid):
+    return get_modify_detail(uid)
 
 
 @socketio.on('connect')

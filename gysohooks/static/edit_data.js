@@ -1,6 +1,15 @@
 const baseItem = $('#base-item').clone().removeAttr('id').removeClass('d-none');
 const cache = {};
 let current_uid = ''
+let current_capture_detail = ''
+
+const modify_cache = {
+    url: '',
+    uid: '',
+    requests_data: '',
+    response_header: '',
+    response_body: ''
+}
 
 class Capture {
     constructor(uid, snap, request, response) {
@@ -58,22 +67,31 @@ function snapInfo(snap) {
         $('#capture-list').children().removeClass('selected');
         $(netItem).addClass('selected');
         console.log("after ", $(netItem).attr("id"))
-        getCaptureDetail(snap.uid);
+        getHistoryDetail(snap.uid);
     });
     cache[snap.uid] = new Capture(snap.uid, snap, null, null);
     if (current_uid === '') {
         current_uid = snap.uid;
         setTimeout(function () {
-            getCaptureDetail(current_uid);
+            getHistoryDetail(current_uid);
         }, 10);
     }
 }
 
-function getCaptureDetail(uid) {
+function getHistoryDetail(uid) {
+    function setUI(captureDetail) {
+        current_capture_detail = captureDetail;
+        console.log(captureDetail);
+        parseHistoryDetail(captureDetail);
+        parseDetailToEdit(captureDetail);
+        getModifyDetail(uid);
+        cache[uid] = captureDetail;
+    }
+
     let capture = cache[uid];
     if (capture.request != null) {
         console.log(capture);
-        parseEditDetail(capture);
+        setUI(capture);
         return;
     }
     $('#capture-detail').show();
@@ -83,9 +101,47 @@ function getCaptureDetail(uid) {
         method: "GET",
         dataType: "json",
         success: function (captureDetail) {
-            console.log(captureDetail);
-            parseEditDetail(captureDetail);
-            parseDetailToEdit(captureDetail)
+            setUI(captureDetail);
+        },
+        error: function (error) {
+            console.error("Error fetching conversations:", error);
+        },
+    });
+}
+
+function getModifyDetail(uid) {
+    $.ajax({
+        url: `/get_modify_data/${uid}`,
+        method: "GET",
+        dataType: "json",
+        success: function (modifyDetail) {
+            console.log(modifyDetail);
+            if (modifyDetail.requests_data !== '') {
+                $('#edit-request-textarea').val(modifyDetail.requests_data);
+                modifyRequestBt.attr('aria-selected', 'true');
+                modifyRequestBt.addClass('btn-danger');
+            } else {
+                modifyRequestBt.attr('aria-selected', 'false');
+                modifyRequestBt.removeClass('btn-danger');
+            }
+
+            if (modifyDetail.response_header !== '') {
+                $('#edit-response-textarea-header').val(modifyDetail.response_header);
+                modifyResponseHeaderBt.attr('aria-selected', 'true');
+                modifyResponseHeaderBt.addClass('btn-danger');
+            } else {
+                modifyResponseHeaderBt.attr('aria-selected', 'false');
+                modifyResponseHeaderBt.removeClass('btn-danger');
+            }
+
+            if (modifyDetail.response_body !== '') {
+                $('#edit-response-textarea-body').val(modifyDetail.response_body);
+                modifyResponseBodyBt.attr('aria-selected', 'true');
+                modifyResponseBodyBt.addClass('btn-danger');
+            } else {
+                modifyResponseBodyBt.attr('aria-selected', 'false');
+                modifyResponseBodyBt.removeClass('btn-danger');
+            }
         },
         error: function (error) {
             console.error("Error fetching conversations:", error);
@@ -106,7 +162,7 @@ function formatJSONToHTML(obj, indent = 0) {
     return output;
 }
 
-function parseEditDetail(captureDetail) {
+function parseHistoryDetail(captureDetail) {
     const request = captureDetail.request;
     const response = captureDetail.response;
     const request_info = {
@@ -155,6 +211,7 @@ function resetEditRequestInfo(request_info) {
         formattedRequest += JSON.stringify(request_info.content, null, 2);
     }
     $('#edit-request-textarea').text(formattedRequest);
+    modify_cache.requests_data = formattedRequest;
 }
 
 function resetEditResponseInfo(response_info) {
@@ -170,7 +227,9 @@ function resetEditResponseInfo(response_info) {
         }
     }
     let formattedResponse = `${responseLine}\n${headers}\n`;
-    $('#edit-response-textarea-header').text(formattedResponse);
+    $('#edit-response-textarea-header').val(formattedResponse);
+    modify_cache.response_header = formattedResponse;
+
 
     let formattedContent = "";
     if (response_info.content) {
@@ -180,7 +239,8 @@ function resetEditResponseInfo(response_info) {
             formattedContent = response_info.content;
         }
     }
-    $('#edit-response-textarea-body').text(formattedContent);
+    $('#edit-response-textarea-body').val(formattedContent);
+    modify_cache.response_body = formattedContent;
 }
 
 function parseDetailToEdit(captureDetail) {
@@ -328,11 +388,23 @@ function setModifyData() {
     const isResponseBodySelected = modifyResponseBodyBt.attr('aria-selected');
 
     const data = {
-        url:$('#target-url').text(),
-        requestTextarea: isRequestSelected==='true'?$("#edit-request-textarea").val():'',
-        responseHeaderTextarea: isResponseHeaderSelected==='true'?$("#edit-response-textarea-header").val():'',
-        responseBodyTextarea: isResponseBodySelected==='true'?$("#edit-response-textarea-body").val():''
+        uid: current_uid,
+        url: $('#target-url').text(),
+        requestTextarea: isRequestSelected === 'true' ? $("#edit-request-textarea").val() : '',
+        responseHeaderTextarea: isResponseHeaderSelected === 'true' ? $("#edit-response-textarea-header").val() : '',
+        responseBodyTextarea: isResponseBodySelected === 'true' ? $("#edit-response-textarea-body").val() : ''
     };
+    if (isRequestSelected !== 'true') {
+        $("#edit-request-textarea").val(modify_cache.requests_data)
+    }
+
+    if (isResponseHeaderSelected !== 'true') {
+        $("#edit-response-textarea-header").val(modify_cache.response_header)
+    }
+
+    if (isResponseBodySelected !== 'true') {
+        $("#edit-response-textarea-body").val(modify_cache.response_body)
+    }
 
     $.ajax({
         url: "/set_modify_data",  // Flask 服务器端路由
