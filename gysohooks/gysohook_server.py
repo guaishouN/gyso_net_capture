@@ -7,7 +7,8 @@ from mitmproxy.tools.dump import DumpMaster
 from flask import Flask, render_template, request, send_file
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
-from current_addon import GysoProcessAddon, get_capture_item_as_json, get_current_capture_list, update_modify, ModifyCache
+from current_addon import GysoHookAddon, get_capture_item_as_json, get_current_capture_list
+from modify_addon import update_modify, ModifyCache, GysoModifyAddon
 from history_addon import get_history_detail_as_json, save_upload_file, get_history_list
 from dumps_addon import GysoHooksDumpsAddOn, dumps_file_name
 
@@ -16,8 +17,9 @@ queue_m = queue.Queue()
 exit_event = asyncio.Event()
 socketio = SocketIO(app, cors_allowed_origins="*")
 cors = CORS(app)
-gyso_io_addon: GysoHooksDumpsAddOn = ...
-process_addon: GysoProcessAddon = ...
+gyso_io_addon_obj: GysoHooksDumpsAddOn = ...
+current_hook_addon_obj: GysoHookAddon = ...
+modify_addon_obj:  GysoModifyAddon = ...
 
 
 @app.route("/", methods=("GET", "POST"))
@@ -50,8 +52,8 @@ def history_detail(uid):
 
 @app.route("/dumps_file")
 def save_dumps_file():
-    if gyso_io_addon is not None:
-        gyso_io_addon.dumps_as_file_to_client()
+    if gyso_io_addon_obj is not None:
+        gyso_io_addon_obj.dumps_as_file_to_client()
     return send_file(dumps_file_name, mimetype='text/plain', as_attachment=True)
 
 
@@ -80,9 +82,9 @@ def get_current_list():
 @app.route("/apply_modify/<modify_type>", methods=["GET"])
 def set_apply_modify(modify_type: str):
     print(f'apply_modify {modify_type}')
-    if process_addon is not None:
-        process_addon.apply_modify = (modify_type == 'true')
-    return f'apply_modify set [{process_addon.apply_modify}]'
+    if modify_addon_obj is not None:
+        modify_addon_obj.apply_modify = (modify_type == 'true')
+    return f'apply_modify set [{modify_addon_obj.apply_modify}]'
 
 
 @app.route("/set_modify_data", methods=["POST"])
@@ -109,28 +111,22 @@ def handle_disconnect():
 
 @socketio.on('message')
 def handle_message(data):
-    # 处理收到的消息
     print('Received message:', data)
-    # 在这里根据需要，将消息推送给其他客户端
-
-    # 发送响应消息给发送方客户端
     socketio.emit('response', 'Message received')
 
 
 async def run_mitmdump():
-    # 创建 mitmproxy 的选项对象
     mitm_options = options.Options(ssl_insecure=True)
-
-    # 创建 mitmproxy 的主控制器对象
     mitm_master = DumpMaster(mitm_options)
+    global gyso_io_addon_obj, current_hook_addon_obj, modify_addon_obj
 
-    # 创建 Addon 实例并传递队列
-    global gyso_io_addon, process_addon
-    process_addon = GysoProcessAddon(app, queue_m)
-    gyso_io_addon = GysoHooksDumpsAddOn()
+    modify_addon_obj = GysoModifyAddon()
+    current_hook_addon_obj = GysoHookAddon(app, queue_m)
+    gyso_io_addon_obj = GysoHooksDumpsAddOn()
 
-    mitm_master.addons.add(process_addon)
-    mitm_master.addons.add(gyso_io_addon)
+    mitm_master.addons.add(modify_addon_obj)
+    mitm_master.addons.add(current_hook_addon_obj)
+    mitm_master.addons.add(gyso_io_addon_obj)
 
     # 启动 mitmproxy
     await mitm_master.run()
@@ -150,7 +146,6 @@ def flask_queue_emit():
     print("flask_queue_emit begin running")
     while True:
         package = queue_m.get()
-        # print("flask_queue_emit  --- queue data", str(package))
         socketio.emit('response', str(package))
         queue_m.task_done()
 

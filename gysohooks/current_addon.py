@@ -3,27 +3,6 @@ from mitmproxy import ctx, http, dns
 
 CACHE = {}
 FLOW_CACHE = {}
-MODIFY_CACHE = {}
-
-
-class ModifyCache:
-    url: str = ...
-    requests_data: str = ...
-    response_header: str = ...
-    response_body: str = ...
-
-    def __str__(self) -> str:
-        return str({
-            "url": self.url,
-            "requests_data": self.requests_data,
-            "response_header": self.response_header,
-            "response_body": self.response_body
-        })
-
-
-def update_modify(modify_data: ModifyCache):
-    MODIFY_CACHE[modify_data.url] = modify_data
-    print(str(modify_data))
 
 
 def get_capture_item(uid: str):
@@ -117,11 +96,10 @@ def ensure_cache(flow: http.HTTPFlow):
         CACHE[uid] = item
 
 
-class GysoProcessAddon:
+class GysoHookAddon:
     """
        Http and Https 拦截
     """
-    apply_modify = False
 
     def __init__(self, app_s=None, queue_s=None):
         self.app = app_s
@@ -212,14 +190,6 @@ class GysoProcessAddon:
         request_time = flow.request.timestamp_start
         response_time = flow.response.timestamp_end
         time_diff = response_time - request_time
-        print(f"apply_modify[{self.apply_modify}] url[{flow.request.pretty_url}]",
-              f" catch [{(flow.request.pretty_url in MODIFY_CACHE)}]")
-        if self.apply_modify and flow.request.pretty_url in MODIFY_CACHE:
-            m_cache: ModifyCache = MODIFY_CACHE[flow.request.pretty_url]
-            if m_cache.response_body is not None and m_cache.response_body != '':
-                flow.response.content = m_cache.response_body.encode('utf-8')
-            pass
-
         uid = flow.id
         ensure_cache(flow)
         item = CACHE[uid]
@@ -276,10 +246,3 @@ class GysoProcessAddon:
     def dns_request(self, flow: dns.DNSFlow):
         print(f'dns_request {str(flow)}')
         pass
-
-
-def add_cache(gyso_addon: GysoProcessAddon, flow: http.HTTPFlow):
-    ensure_cache(flow)
-    if gyso_addon is not None:
-        gyso_addon.request(flow)
-        gyso_addon.response(flow)
