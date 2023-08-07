@@ -210,7 +210,7 @@ function resetEditRequestInfo(request_info) {
     if (request_info.content) {
         formattedRequest += JSON.stringify(request_info.content, null, 2);
     }
-    $('#edit-request-textarea').text(formattedRequest);
+    $('#edit-request-textarea').val(formattedRequest);
     modify_cache.requests_data = formattedRequest;
 }
 
