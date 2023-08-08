@@ -28,19 +28,19 @@ def flask_queue_emit():
 
 
 if __name__ == '__main__':
-    executor = ThreadPoolExecutor(max_workers=2)
+    #executor = ThreadPoolExecutor(max_workers=2)
     # 在线程池中运行 mitmproxy
-    mitmdump_future = executor.submit(flask_queue_emit)
+    #mitmdump_future = executor.submit(flask_queue_emit)
 
     loop_m = asyncio.get_event_loop()
-    print(f'begin sync task')
+    print(f'begin sync task1')
     asyncio.ensure_future(task("C", 8))
-    print(f'done sync task')
+    print(f'done sync task1')
 
-    print(f'begin async task')
+    print(f'begin async task2')
     tasks = asyncio.gather(task('A', 10), task('B', 5))
 
-    print(f'done add tasks')
+    print(f'done add tasks2')
     loop_m.run_until_complete(tasks)
     loop_m.close()
     print(f'finish process')

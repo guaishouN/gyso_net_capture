@@ -228,18 +228,33 @@ class GysoHookAddon:
         except UnicodeDecodeError:
             content = "[(⊙o⊙)…， 这个数据抓包工具不能解析, 而不是没有response Body数据]"
             print("Failed request decoded!! UnicodeDecodeError")
-        item.response = {
-            'type': 'response',
-            'uuid': flow.id,
-            'url': flow.request.url,
-            'status_code': flow.response.status_code,
-            'headers': dict(flow.response.headers),
-            'content': content,
-            'time_diff': str(time_diff),
-            'http_version': flow.response.http_version,
-            'timestamp_start': flow.response.timestamp_start,
-            'reason': flow.response.reason,
-        }
+        if flow.response is not None:
+            item.response = {
+                'type': 'response',
+                'uuid': flow.id,
+                'url': flow.request.url,
+                'status_code': flow.response.status_code,
+                'headers': dict(flow.response.headers),
+                'content': content,
+                'time_diff': str(time_diff),
+                'http_version': flow.response.http_version,
+                'timestamp_start': flow.response.timestamp_start,
+                'reason': flow.response.reason,
+            }
+        else:
+            item.response = {
+                'type': 'response',
+                'uuid': flow.id,
+                'url': flow.request.url,
+                'status_code': '',
+                'headers': '',
+                'content': content,
+                'time_diff': str(time_diff),
+                'http_version': '',
+                'timestamp_start': '',
+                'reason': '',
+            }
+
         print(f"error flow {item.error_msg}")
         pass
 

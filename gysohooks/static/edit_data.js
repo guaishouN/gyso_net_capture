@@ -11,6 +11,10 @@ const modify_cache = {
     response_body: ''
 }
 
+const  requestArea = $("#edit-request-textarea");
+const  responseHeaderArea = $("#edit-response-textarea-header");
+const  responseBodyArea = $("#edit-response-textarea-body");
+
 class Capture {
     constructor(uid, snap, request, response) {
         this.uid = uid;
@@ -81,7 +85,7 @@ function snapInfo(snap) {
 function getHistoryDetail(uid) {
     function setUI(captureDetail) {
         current_capture_detail = captureDetail;
-        console.log(captureDetail);
+        console.log("edit setUI "+captureDetail);
         parseHistoryDetail(captureDetail);
         parseDetailToEdit(captureDetail);
         getModifyDetail(uid);
@@ -117,7 +121,7 @@ function getModifyDetail(uid) {
         success: function (modifyDetail) {
             console.log(modifyDetail);
             if (modifyDetail.requests_data !== '') {
-                $('#edit-request-textarea').val(modifyDetail.requests_data);
+                requestArea.val(modifyDetail.requests_data);
                 modifyRequestBt.attr('aria-selected', 'true');
                 modifyRequestBt.addClass('btn-danger');
             } else {
@@ -126,7 +130,7 @@ function getModifyDetail(uid) {
             }
 
             if (modifyDetail.response_header !== '') {
-                $('#edit-response-textarea-header').val(modifyDetail.response_header);
+                responseHeaderArea.val(modifyDetail.response_header);
                 modifyResponseHeaderBt.attr('aria-selected', 'true');
                 modifyResponseHeaderBt.addClass('btn-danger');
             } else {
@@ -135,7 +139,7 @@ function getModifyDetail(uid) {
             }
 
             if (modifyDetail.response_body !== '') {
-                $('#edit-response-textarea-body').val(modifyDetail.response_body);
+                responseBodyArea.val(modifyDetail.response_body);
                 modifyResponseBodyBt.attr('aria-selected', 'true');
                 modifyResponseBodyBt.addClass('btn-danger');
             } else {
@@ -161,6 +165,7 @@ function formatJSONToHTML(obj, indent = 0) {
     }
     return output;
 }
+
 
 function parseHistoryDetail(captureDetail) {
     const request = captureDetail.request;
@@ -188,6 +193,7 @@ function parseHistoryDetail(captureDetail) {
     detail.find('#capture-response-body-detail').text(response_info.content);
 }
 
+
 function resetEditRequestInfo(request_info) {
     if (request_info === '') {
         return ''
@@ -206,13 +212,11 @@ function resetEditRequestInfo(request_info) {
 
     let formattedRequest = `${requestLine}\n${headers}\n`;
 
-    // Add the request body if present
-    if (request_info.content) {
-        formattedRequest += JSON.stringify(request_info.content, null, 2);
-    }
-    $('#edit-request-textarea').val(formattedRequest);
+    formattedRequest += request_info.content;
+    requestArea.val(formattedRequest);
     modify_cache.requests_data = formattedRequest;
 }
+
 
 function resetEditResponseInfo(response_info) {
     if (response_info === '') {
@@ -227,21 +231,22 @@ function resetEditResponseInfo(response_info) {
         }
     }
     let formattedResponse = `${responseLine}\n${headers}\n`;
-    $('#edit-response-textarea-header').val(formattedResponse);
+    responseHeaderArea.val(formattedResponse);
     modify_cache.response_header = formattedResponse;
 
 
     let formattedContent = "";
     if (response_info.content) {
         try {
-            formattedContent = JSON.stringify(response_info.content, null, 2);
+            formattedContent = response_info.content;
         } catch (err) {
             formattedContent = response_info.content;
         }
     }
-    $('#edit-response-textarea-body').val(formattedContent);
+    responseBodyArea.val(formattedContent);
     modify_cache.response_body = formattedContent;
 }
+
 
 function parseDetailToEdit(captureDetail) {
     const request_info = captureDetail.request;
@@ -269,6 +274,7 @@ $('#clear-data').on('click', () => {
         }
     });
 })
+
 
 $('#import-data').on('click', () => {
     const fileInput = $("#history-file-input")[0];
@@ -372,7 +378,6 @@ modifyResponseHeaderBt.on('click', () => {
 const modifyResponseBodyBt = $('#modify-response-body');
 modifyResponseBodyBt.on('click', () => {
     const isSelected = modifyResponseBodyBt.attr('aria-selected');
-    console.log(isSelected)
     modifyResponseBodyBt.attr('aria-selected', isSelected === 'true' ? 'false' : 'true');
     if (isSelected === 'true') {
         modifyResponseBodyBt.removeClass('btn-danger');
@@ -390,20 +395,21 @@ function setModifyData() {
     const data = {
         uid: current_uid,
         url: $('#target-url').text(),
-        requestTextarea: isRequestSelected === 'true' ? $("#edit-request-textarea").val() : '',
-        responseHeaderTextarea: isResponseHeaderSelected === 'true' ? $("#edit-response-textarea-header").val() : '',
-        responseBodyTextarea: isResponseBodySelected === 'true' ? $("#edit-response-textarea-body").val() : ''
+        requestTextarea: isRequestSelected === 'true' ? requestArea.val() : '',
+        responseHeaderTextarea: isResponseHeaderSelected === 'true' ? responseHeaderArea.val() : '',
+        responseBodyTextarea: isResponseBodySelected === 'true' ? responseBodyArea.val() : ''
     };
+
     if (isRequestSelected !== 'true') {
-        $("#edit-request-textarea").val(modify_cache.requests_data)
+        requestArea.val(modify_cache.requests_data)
     }
 
     if (isResponseHeaderSelected !== 'true') {
-        $("#edit-response-textarea-header").val(modify_cache.response_header)
+        responseHeaderArea.val(modify_cache.response_header)
     }
 
     if (isResponseBodySelected !== 'true') {
-        $("#edit-response-textarea-body").val(modify_cache.response_body)
+        responseBodyArea.val(modify_cache.response_body)
     }
 
     $.ajax({
