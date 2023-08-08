@@ -79,12 +79,18 @@ def get_current_list():
     return get_current_capture_list()
 
 
-@app.route("/apply_modify/<modify_type>", methods=["GET"])
+@app.route("/set_modify_apply/<modify_type>", methods=["GET"])
 def set_apply_modify(modify_type: str):
     print(f'apply_modify {modify_type}')
     if modify_addon_obj is not None:
         modify_addon_obj.apply_modify = (modify_type == 'true')
     return f'apply_modify set [{modify_addon_obj.apply_modify}]'
+
+
+@app.route("/get_modify_apply", methods=["GET"])
+def get_apply_modify():
+    print(f'get_modify_apply[{modify_addon_obj.apply_modify}]')
+    return f'{modify_addon_obj.apply_modify}'
 
 
 @app.route("/set_modify_data", methods=["POST"])

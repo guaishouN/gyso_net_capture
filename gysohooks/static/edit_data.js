@@ -11,9 +11,9 @@ const modify_cache = {
     response_body: ''
 }
 
-const  requestArea = $("#edit-request-textarea");
-const  responseHeaderArea = $("#edit-response-textarea-header");
-const  responseBodyArea = $("#edit-response-textarea-body");
+const requestArea = $("#edit-request-textarea");
+const responseHeaderArea = $("#edit-response-textarea-header");
+const responseBodyArea = $("#edit-response-textarea-body");
 
 class Capture {
     constructor(uid, snap, request, response) {
@@ -51,7 +51,24 @@ $(document).ready(function () {
         error: function (error) {
             console.error("Error fetching conversations:", error);
         },
+    });
 
+    $.ajax({
+        url: "/get_modify_apply",
+        method: "GET",
+        success: function (isSelected) {
+            console.log("get_modify_apply["+isSelected+"]")
+            const bt = $('#stop-start-apply');
+            bt.attr('aria-selected', (isSelected === 'true' || isSelected === 'True')? 'true' : 'false');
+            if (isSelected === 'true' || isSelected === 'True') {
+                bt.addClass('btn-danger');
+            } else {
+                bt.removeClass('btn-danger');
+            }
+        },
+        error: function (error) {
+            console.error("Error fetching conversations:", error);
+        },
     });
 });
 
@@ -85,7 +102,7 @@ function snapInfo(snap) {
 function getHistoryDetail(uid) {
     function setUI(captureDetail) {
         current_capture_detail = captureDetail;
-        console.log("edit setUI "+captureDetail);
+        console.log("edit setUI " + captureDetail);
         parseHistoryDetail(captureDetail);
         parseDetailToEdit(captureDetail);
         getModifyDetail(uid);
@@ -336,11 +353,11 @@ $('#stop-start-apply').on('click', () => {
         bt.addClass('btn-danger');
     }
     $.ajax({
-        url: "/apply_modify/" + bt.attr('aria-selected'),
+        url: "/set_modify_apply/" + bt.attr('aria-selected'),
         method: "GET",
         dataType: "text",
         success: function (result) {
-            console.log(result)
+            console.log("set_modify_apply " + result)
         },
         error: function (error) {
             console.error("apply_modify error:", error);
