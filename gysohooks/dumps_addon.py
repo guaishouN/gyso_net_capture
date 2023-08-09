@@ -1,10 +1,15 @@
 import os
 from typing import BinaryIO
 from mitmproxy import io, http
-
+import mimetypes
 
 folder_path = "./data"
 dumps_file_name = folder_path + "/dumps.data"
+
+
+def is_filtered_mimetype(mime_type):
+    filtered_types = ['text/plain', 'text/html', 'application/json', 'application/xml']
+    return mime_type in filtered_types
 
 
 def checkout_data_dir():
@@ -30,7 +35,9 @@ class GysoHooksDumpsAddOn:
         self.w = io.FlowWriter(self.f)
 
     def response(self, flow: http.HTTPFlow) -> None:
-        self.flow_cache.add(flow)
+        mime_type, _ = mimetypes.guess_type(flow.request.url)
+        if mime_type and not is_filtered_mimetype(mime_type):
+            self.flow_cache.add(flow)
 
     def dumps_as_file_to_client(self):
         for flow in self.flow_cache:
