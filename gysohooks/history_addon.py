@@ -21,6 +21,17 @@ history_file_name = folder_path + "/history.data"
 url_set = set[str]()
 
 
+def clear_history_cache():
+    url_set.clear()
+    HISTORY_CACHE.clear()
+    try:
+        with open(history_file_name, "wb+") as f:
+            pass
+
+    except OSError as e:
+        print(f"e clear_history_cache error {str(e)}")
+
+
 def append_flow_to_history(flow: http.HTTPFlow):
     try:
         with open(history_file_name, "ab+") as f:

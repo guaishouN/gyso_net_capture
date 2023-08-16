@@ -72,10 +72,12 @@ class GysoModifyAddon:
         pass
 
     def response(self, flow: http.HTTPFlow) -> None:
-        print(f"response apply_modify[{self.apply_modify}] url[{flow.request.pretty_url}]",
+        print(f"response apply_modify[{self.apply_modify}] url[{flow.request.url}]",
               f" catch [{(flow.request.pretty_url in MODIFY_CACHE)}]")
         if self.apply_modify and flow.request.pretty_url in MODIFY_CACHE:
             m_cache: ModifyCache = MODIFY_CACHE[flow.request.pretty_url]
             if m_cache.response_body is not None and m_cache.response_body != '':
                 flow.response.content = m_cache.response_body.encode('utf-8')
+                flow.response.status_code = 200
+                flow.response.reason = 'OK'
             pass

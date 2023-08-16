@@ -9,6 +9,7 @@ from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
 import current_addon
 import modify_addon
+import history_addon
 from current_addon import GysoHookAddon, get_capture_item_as_json, get_current_capture_list
 from modify_addon import update_modify, ModifyCache, GysoModifyAddon, get_modify_detail
 from history_addon import get_history_detail_as_json, save_upload_file, get_history_list, history_copy_and_create_target_url
@@ -106,6 +107,7 @@ def clear_capture_list():
 def clear_edit_list():
     print(f'clear_edit_list')
     modify_addon.clear_edit_cache()
+    history_addon.clear_history_cache()
     return f'done clear_edit_list'
 
 
