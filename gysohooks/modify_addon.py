@@ -5,6 +5,10 @@ from mitmproxy import ctx, http
 MODIFY_CACHE = {}
 
 
+def clear_edit_cache():
+    MODIFY_CACHE.clear()
+    pass
+
 class ModifyCache:
     url: str = ...
     uid: str = ...

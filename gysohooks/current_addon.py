@@ -5,6 +5,12 @@ CACHE = {}
 FLOW_CACHE = {}
 
 
+def clear_cache():
+    CACHE.clear()
+    FLOW_CACHE.clear()
+    pass
+
+
 def get_capture_item(uid: str):
     if uid in CACHE:
         return CACHE[uid]
@@ -100,6 +106,7 @@ class GysoHookAddon:
     """
        Http and Https 拦截
     """
+    running_stat: str = 'stop'
 
     def __init__(self, app_s=None, queue_s=None):
         self.app = app_s

@@ -43,6 +43,25 @@ $(document).ready(function () {
         },
 
     });
+
+    $.ajax({
+        url: "/get_start_or_stop_capture_stat",
+        method: "GET",
+        dataType: "text",
+        success: function (result) {
+            const bt = $('#stop-start-capture');
+            console.log(`get_start_or_stop_capture_stat result=${result}`);
+            bt.attr('aria-selected', result === 'start' ? 'true' : 'false');
+            if (result === 'start') {
+                bt.addClass('btn-danger');
+            } else {
+                bt.removeClass('btn-danger');
+            }
+        },
+        error: function (error) {
+            console.error("stop-start-capture", error);
+        },
+    });
 });
 
 socket.on('connect', function () {
@@ -168,8 +187,19 @@ function responseInfo(response) {
 }
 
 $('#clear-data').click(() => {
-    $('#capture-list').find('li').remove();
-    $('#capture-list-blank-tip').show();
+    $.ajax({
+        url: "/clear/captureList",
+        method: "GET",
+        dataType: 'text',
+        success: function (result) {
+            console.log(result);
+            $('#capture-list').find('li').remove();
+            $('#capture-list-blank-tip').show();
+        },
+        error: function (error) {
+            console.error("capture-list clear-data", error);
+        },
+    });
 })
 
 
@@ -195,8 +225,28 @@ $('#export-data').click(() => {
 })
 
 
-$('#stop-start-capture').click(() => {
-
+$('#stop-start-capture').on('click', () => {
+    const bt = $('#stop-start-capture');
+    const isSelected = bt.attr('aria-selected');
+    const stat = isSelected === 'false' ? "start" : "stop";
+    console.log("stop-start-capture send[" + stat + "]");
+    $.ajax({
+        url: "/start_or_stop_capture/" + stat,
+        method: "GET",
+        dataType: "text",
+        success: function (result) {
+            console.log(`start_or_stop_capture result=${result}`);
+            bt.attr('aria-selected', result === 'start' ? 'true' : 'false');
+            if (result === 'start') {
+                bt.addClass('btn-danger');
+            } else {
+                bt.removeClass('btn-danger');
+            }
+        },
+        error: function (error) {
+            console.error("stop-start-capture", error);
+        },
+    });
 })
 
 function sendMessage() {

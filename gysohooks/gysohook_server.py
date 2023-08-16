@@ -7,6 +7,8 @@ from mitmproxy.tools.dump import DumpMaster
 from flask import Flask, render_template, request, send_file
 from flask_socketio import SocketIO
 from flask_cors import CORS, cross_origin
+import current_addon
+import modify_addon
 from current_addon import GysoHookAddon, get_capture_item_as_json, get_current_capture_list
 from modify_addon import update_modify, ModifyCache, GysoModifyAddon, get_modify_detail
 from history_addon import get_history_detail_as_json, save_upload_file, get_history_list
@@ -91,6 +93,36 @@ def set_apply_modify(modify_type: str):
 def get_apply_modify():
     print(f'get_modify_apply[{modify_addon_obj.apply_modify}]')
     return f'{modify_addon_obj.apply_modify}'
+
+
+@app.route("/clear/captureList", methods=["GET"])
+def clear_capture_list():
+    print(f'clear_capture_list')
+    current_addon.clear_cache()
+    return f'done clear_capture_list'
+
+
+@app.route("/clear/edit", methods=["GET"])
+def clear_edit_list():
+    print(f'clear_edit_list')
+    modify_addon.clear_edit_cache()
+    return f'done clear_edit_list'
+
+
+@app.route("/start_or_stop_capture/<running_stat>", methods=["GET"])
+def start_or_stop_capture(running_stat: str):
+    print(f'start_or_stop_capture {running_stat}')
+    if current_hook_addon_obj is not None:
+        current_hook_addon_obj.running_stat = running_stat
+    if running_stat is None:
+        return 'stop'
+    return running_stat
+
+
+@app.route("/get_start_or_stop_capture_stat", methods=["GET"])
+def get_start_or_stop_capture_stat():
+    print(f'get_start_or_stop_capture_stat[{current_hook_addon_obj.running_stat}]')
+    return f'{current_hook_addon_obj.running_stat}'
 
 
 @app.route("/set_modify_data", methods=["POST"])
