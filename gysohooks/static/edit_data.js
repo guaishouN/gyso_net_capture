@@ -24,19 +24,7 @@ class Capture {
     }
 }
 
-$(document).ready(function () {
-    //baseItem.appendTo('#capture-list').show();
-    $('#capture-detail').hide();
-    $('.navtab li').on('click', function () {
-        if ($(this).hasClass('selected')) {
-            return;
-        }
-        const url = $(this).attr('data-href');
-        if (url) {
-            window.location.href = url;
-        }
-    });
-
+function getHistoryList() {
     $.ajax({
         url: "/get_history_list",
         method: "GET",
@@ -52,14 +40,30 @@ $(document).ready(function () {
             console.error("Error fetching conversations:", error);
         },
     });
+}
+
+$(document).ready(function () {
+    //baseItem.appendTo('#capture-list').show();
+    $('#capture-detail').hide();
+    $('.navtab li').on('click', function () {
+        if ($(this).hasClass('selected')) {
+            return;
+        }
+        const url = $(this).attr('data-href');
+        if (url) {
+            window.location.href = url;
+        }
+    });
+
+    getHistoryList();
 
     $.ajax({
         url: "/get_modify_apply",
         method: "GET",
         success: function (isSelected) {
-            console.log("get_modify_apply["+isSelected+"]")
+            console.log("get_modify_apply[" + isSelected + "]")
             const bt = $('#stop-start-apply');
-            bt.attr('aria-selected', (isSelected === 'true' || isSelected === 'True')? 'true' : 'false');
+            bt.attr('aria-selected', (isSelected === 'true' || isSelected === 'True') ? 'true' : 'false');
             if (isSelected === 'true' || isSelected === 'True') {
                 bt.addClass('btn-danger');
             } else {
@@ -441,3 +445,46 @@ function setModifyData() {
         }
     });
 }
+
+$('#copy-create-data').on('click', () => {
+    $("#myFirstDialog").show();
+    if (current_uid === '') {
+        alert("请在历史数据列表中选中一个url作为模板");
+    } else {
+        createDialog.showModal();
+    }
+});
+
+
+const createDialog = document.getElementById('copyAndCreateDialog');
+const cancelBtn = document.getElementById('cancelCreateBtn');
+const saveBtn = document.getElementById('saveCreateBtn');
+const textInput = document.getElementById('newTargetUrl');
+
+
+cancelBtn.addEventListener('click', () => {
+    createDialog.close();
+});
+
+saveBtn.addEventListener('click', () => {
+    const value = textInput.value;
+    console.log('Input create value:', value);
+    const data = {
+        uid:current_uid,
+        targetUrl:value
+    }
+    createDialog.close();
+        $.ajax({
+        url: "/copy_and_create_target_url",  // Flask 服务器端路由
+        method: "POST",
+        data: data,
+        dataType:'json',
+        success: function (result) {
+            console.log(`copy_and_create_target_url result=${result}`);
+            snapInfo(result);
+        },
+        error: function (xhr, status, error) {
+            console.error("Error sending data:", error);
+        }
+    });
+});

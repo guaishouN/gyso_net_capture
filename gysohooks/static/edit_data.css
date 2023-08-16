@@ -1,17 +1,29 @@
 @charset "UTF-8";
-body{}
+body {
+}
+/* Style for the centered dialog */
+dialog {
+    width: 80%;
+    max-width: 400px;
+    position: fixed;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
 .navtab {
-  display: flex;
-  justify-content: left;
-  background-color: darkgray; /* 选中状态的背景色 */
+    display: flex;
+    justify-content: left;
+    background-color: darkgray; /* 选中状态的背景色 */
 }
 
 .navtab ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  font-weight: bold;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    font-weight: bold;
 }
 
 .navtab li {
@@ -24,13 +36,13 @@ body{}
 }
 
 .navtab li.selected {
-   background-color: gray;
+    background-color: gray;
 }
 
-.container{
-   display: flex;
-   height: 100vh;
-   margin: 0;
+.container {
+    display: flex;
+    height: 100vh;
+    margin: 0;
 }
 
 .left-section {
@@ -40,7 +52,7 @@ body{}
 }
 
 .right-section {
-    flex:30%;
+    flex: 30%;
     overflow: auto;
 }
 
@@ -83,15 +95,16 @@ body{}
 }
 
 .menu li:hover {
-    background-color: Lavender ;
+    background-color: Lavender;
 }
 
 .menu li.selected {
-    background-color: LightSkyBlue ; /* 选中状态的背景色 */
+    background-color: LightSkyBlue; /* 选中状态的背景色 */
 }
+
 .menu li span {
 
-    min-width:50px
+    min-width: 50px
 
 }
 
@@ -101,6 +114,6 @@ body{}
     padding: 0px;
 }
 
-.content_right{
+.content_right {
     padding-left: 10px;
 }

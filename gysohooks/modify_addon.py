@@ -9,6 +9,7 @@ def clear_edit_cache():
     MODIFY_CACHE.clear()
     pass
 
+
 class ModifyCache:
     url: str = ...
     uid: str = ...

@@ -11,7 +11,7 @@ import current_addon
 import modify_addon
 from current_addon import GysoHookAddon, get_capture_item_as_json, get_current_capture_list
 from modify_addon import update_modify, ModifyCache, GysoModifyAddon, get_modify_detail
-from history_addon import get_history_detail_as_json, save_upload_file, get_history_list
+from history_addon import get_history_detail_as_json, save_upload_file, get_history_list, history_copy_and_create_target_url
 from dumps_addon import GysoHooksDumpsAddOn, dumps_file_name
 
 app = Flask(__name__)
@@ -141,6 +141,13 @@ def set_modify_data():
 @app.route("/get_modify_data/<uid>", methods=["GET"])
 def get_modify_data(uid):
     return get_modify_detail(uid)
+
+
+@app.route("/copy_and_create_target_url", methods=["POST"])
+def copy_and_create_target_url():
+    data = request.form
+    print(f"copy_and_create_target_url {str(data)}")
+    return history_copy_and_create_target_url(data)
 
 
 @socketio.on('connect')

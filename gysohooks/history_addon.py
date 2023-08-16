@@ -21,6 +21,16 @@ history_file_name = folder_path + "/history.data"
 url_set = set[str]()
 
 
+def append_flow_to_history(flow: http.HTTPFlow):
+    try:
+        with open(history_file_name, "ab+") as f:
+            stream = io.FlowWriter(f)
+            stream.add(flow)
+
+    except OSError as e:
+        print(f"e append_flow_to_history error {str(e)}")
+
+
 def save_upload_file(file):
     file.save(history_file_name)
 
@@ -122,3 +132,15 @@ def get_history_list():
     return json.dumps(snap_list)
 
 
+def history_copy_and_create_target_url(data):
+    uid: str = data['uid']
+    target_url: str = data['targetUrl']
+    flow: http.HTTPFlow = HISTORY_CACHE[uid]
+    new_flow: http.HTTPFlow = flow.copy()
+    new_flow.request.url = target_url
+    snap = SnapInfo(new_flow.id, new_flow.request.method, new_flow.request.pretty_url)
+    HISTORY_CACHE[new_flow.id] = new_flow
+    print(f'history_copy_and_create_target_url old {str(flow)}')
+    print(f'history_copy_and_create_target_url new {str(new_flow)}')
+    append_flow_to_history(new_flow)
+    return snap.to_json()
