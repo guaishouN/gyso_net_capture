@@ -14,6 +14,7 @@ from current_addon import GysoHookAddon, get_capture_item_as_json, get_current_c
 from modify_addon import update_modify, ModifyCache, GysoModifyAddon, get_modify_detail
 from history_addon import get_history_detail_as_json, save_upload_file, get_history_list, history_copy_and_create_target_url
 from dumps_addon import GysoHooksDumpsAddOn, dumps_file_name
+from urllib.parse import urlparse
 
 app = Flask(__name__)
 queue_m = queue.Queue()
@@ -133,6 +134,7 @@ def set_modify_data():
     modify_data = ModifyCache()
     modify_data.url = data["url"]
     modify_data.uid = data["uid"]
+    modify_data.host = urlparse(modify_data.url).hostname
     modify_data.requests_data = data["requestTextarea"]
     modify_data.response_header = data["responseHeaderTextarea"]
     modify_data.response_body = data["responseBodyTextarea"]

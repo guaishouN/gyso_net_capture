@@ -1,21 +1,25 @@
 import json
-
-from mitmproxy import ctx, http
+import socket
+from mitmproxy import ctx, http, dns
+from http.client import responses
 
 MODIFY_CACHE = {}
+MODIFY_HOST_CACHE = {}
 
 
 def clear_edit_cache():
     MODIFY_CACHE.clear()
+    MODIFY_HOST_CACHE.clear()
     pass
 
 
 class ModifyCache:
-    url: str = ...
-    uid: str = ...
-    requests_data: str = ...
-    response_header: str = ...
-    response_body: str = ...
+    url: str = ''
+    uid: str = ''
+    host: str = ''
+    requests_data: str = ''
+    response_header: str = ''
+    response_body: str = ''
 
     def as_json(self):
         return json.dumps({
@@ -31,8 +35,14 @@ class ModifyCache:
 
 
 def update_modify(modify_data: ModifyCache):
-    MODIFY_CACHE[modify_data.url] = modify_data
-    print(str(modify_data))
+    print("update_modify ", str(modify_data))
+    if modify_data.requests_data == '' and modify_data.response_header == '' and modify_data.response_body == '':
+        if modify_data.url in MODIFY_CACHE:
+            MODIFY_CACHE.pop(modify_data.url)
+    else:
+        MODIFY_CACHE[modify_data.url] = modify_data
+        MODIFY_HOST_CACHE[modify_data.host] = ''
+
 
 
 def get_modify_detail(uid):
@@ -61,6 +71,20 @@ class GysoModifyAddon:
     """
     apply_modify = False
 
+    def http_connect(self, flow: http.HTTPFlow):
+        print(f"GysoModifyAddon http_connect {str(flow)}")
+        print("http_connect URL:", flow.request.url)
+        print("http_connect pretty_URL:", flow.request.pretty_url)
+        hostname = flow.request.host
+        if hostname in MODIFY_HOST_CACHE:
+            try:
+                ip = socket.gethostbyname(hostname)
+                MODIFY_HOST_CACHE[hostname] = ip
+                print(f"modify DNS resolution for {hostname}: {ip}")
+            except socket.gaierror:
+                print(f"modify DNS resolution failed for {hostname}")
+                flow.response = http.Response.make(status_code=200)
+
     def request(self, flow: http.HTTPFlow):
         print(f"request apply_modify[{self.apply_modify}] url[{flow.request.pretty_url}]",
               f" catch [{(flow.request.pretty_url in MODIFY_CACHE)}]")
@@ -69,15 +93,34 @@ class GysoModifyAddon:
             if m_cache.requests_data is not None and m_cache.requests_data != '':
                 # flow.response.content = m_cache.response_body.encode('utf-8')
                 pass
-        pass
+        hostname = flow.request.host
+        if hostname in MODIFY_HOST_CACHE and MODIFY_HOST_CACHE[hostname] == '':
+            print("request make request ok")
+            flow.response = http.Response.make(status_code=200)
 
     def response(self, flow: http.HTTPFlow) -> None:
-        print(f"response apply_modify[{self.apply_modify}] url[{flow.request.url}]",
-              f" catch [{(flow.request.pretty_url in MODIFY_CACHE)}]")
-        if self.apply_modify and flow.request.pretty_url in MODIFY_CACHE:
-            m_cache: ModifyCache = MODIFY_CACHE[flow.request.pretty_url]
-            if m_cache.response_body is not None and m_cache.response_body != '':
-                flow.response.content = m_cache.response_body.encode('utf-8')
-                flow.response.status_code = 200
-                flow.response.reason = 'OK'
+        is_modify_target = flow.request.pretty_url in MODIFY_CACHE
+        print(f"response modify ctrl stat[{self.apply_modify}]"
+              f"url[{flow.request.pretty_url}]"
+              f"is_modify_target[{is_modify_target}]")
+        if not self.apply_modify or not is_modify_target:
             pass
+        else:
+            m_cache: ModifyCache = MODIFY_CACHE[flow.request.pretty_url]
+            if m_cache.response_header != '':
+                header_lines = m_cache.response_header.split('\n')
+                http_version, response_code, *_ = header_lines[0].split(' ')
+                response_reason = responses.get(int(response_code), '')
+
+                flow.response.http_version = http_version
+                flow.response.status_code = int(response_code)
+                flow.response.reason = response_reason
+
+            if m_cache.response_body != '':
+                flow.response.content = m_cache.response_body.encode('utf-8')
+
+            print(f"after response modify headers [{str(flow.response.data)}]")
+
+
+    def error(self, flow: http.HTTPFlow):
+        print(f"error apply_modify {str(flow)}")
