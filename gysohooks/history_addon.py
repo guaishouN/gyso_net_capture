@@ -1,5 +1,5 @@
 import json
-from gysohooks.current_addon import SnapInfo
+from current_addon import SnapInfo
 from mitmproxy import io, http
 from mitmproxy.exceptions import FlowReadException
 """
