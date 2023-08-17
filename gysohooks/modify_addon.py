@@ -39,6 +39,8 @@ def update_modify(modify_data: ModifyCache):
     if modify_data.requests_data == '' and modify_data.response_header == '' and modify_data.response_body == '':
         if modify_data.url in MODIFY_CACHE:
             MODIFY_CACHE.pop(modify_data.url)
+        if modify_data.host in MODIFY_HOST_CACHE:
+            MODIFY_HOST_CACHE.pop(modify_data.host)
     else:
         MODIFY_CACHE[modify_data.url] = modify_data
         MODIFY_HOST_CACHE[modify_data.host] = ''
@@ -95,8 +97,14 @@ class GysoModifyAddon:
                 pass
         hostname = flow.request.host
         if hostname in MODIFY_HOST_CACHE and MODIFY_HOST_CACHE[hostname] == '':
-            print("request make request ok")
-            flow.response = http.Response.make(status_code=200)
+            try:
+                ip = socket.gethostbyname(hostname)
+                MODIFY_HOST_CACHE[hostname] = ip
+                print(f"request modify DNS resolution for {hostname}: {ip}")
+            except socket.gaierror:
+                print("request make request ok")
+                flow.response = http.Response.make(status_code=200)
+
 
     def response(self, flow: http.HTTPFlow) -> None:
         is_modify_target = flow.request.pretty_url in MODIFY_CACHE
