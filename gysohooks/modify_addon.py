@@ -35,7 +35,7 @@ class ModifyCache:
 
 
 def update_modify(modify_data: ModifyCache):
-    print("update_modify ", str(modify_data))
+    print("update_modify * ", str(modify_data))
     if modify_data.requests_data == '' and modify_data.response_header == '' and modify_data.response_body == '':
         if modify_data.url in MODIFY_CACHE:
             MODIFY_CACHE.pop(modify_data.url)
