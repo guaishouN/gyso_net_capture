@@ -8,8 +8,11 @@ dumps_file_name = folder_path + "/dumps.data"
 
 
 def is_filtered_mimetype(mime_type):
-    filtered_types = ['text/plain', 'text/html', 'application/json', 'application/xml']
-    return mime_type in filtered_types
+    filtered_types = ['plain', 'html', 'json', 'xml']
+    for type_ in filtered_types:
+        if type_ in mime_type:
+            return True
+    return False
 
 
 def checkout_data_dir():
