@@ -38,9 +38,10 @@ class GysoHooksDumpsAddOn:
         self.w = io.FlowWriter(self.f)
 
     def response(self, flow: http.HTTPFlow) -> None:
-        mime_type, _ = mimetypes.guess_type(flow.request.url)
-        if mime_type and not is_filtered_mimetype(mime_type):
-            self.flow_cache.add(flow)
+        # mime_type, _ = mimetypes.guess_type(flow.request.url)
+        # if mime_type and not is_filtered_mimetype(mime_type):
+        #     self.flow_cache.add(flow)
+        self.flow_cache.add(flow)
 
     def dumps_as_file_to_client(self):
         for flow in self.flow_cache:

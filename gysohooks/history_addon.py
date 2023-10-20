@@ -1,4 +1,6 @@
 import json
+import pprint
+
 from current_addon import SnapInfo
 from mitmproxy import io, http
 from mitmproxy.exceptions import FlowReadException
